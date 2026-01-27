@@ -28,7 +28,7 @@ src/
 
 ## Prerequisites
 - Node.js 20+
-- pnpm (recommended) or npm/yarn/bun
+- bun (recommended) or npm/yarn/bun
 - PostgreSQL database (Neon works great)
 - Google OAuth credentials (optional unless you enable Google login)
 
@@ -45,10 +45,10 @@ Create `.env.local` (the project already reads from it) and provide:
 
 ## Getting Started
 ```bash
-pnpm install          # Install dependencies
-pnpm db:generate      # (optional) sync schema to migrations
-pnpm db:migrate       # Run pending migrations against DATABASE_URL
-pnpm dev              # Start Next.js on http://localhost:3000
+bun install          # Install dependencies
+bun db:generate      # (optional) sync schema to migrations
+bun db:migrate       # Run pending migrations against DATABASE_URL
+bun dev              # Start Next.js on http://localhost:3000
 ```
 
 The sample dashboard lives at `/dashboard` and expects an authenticated user. `src/components/auth` contains the form/profile UI you can drop into any route.
@@ -57,20 +57,20 @@ The sample dashboard lives at `/dashboard` and expects an authenticated user. `s
 
 | Script | Purpose |
 | --- | --- |
-| `pnpm dev` | Run the Next.js development server |
-| `pnpm build` / `pnpm start` | Production build & serve |
-| `pnpm lint` / `pnpm lint:fix` | Biome static analysis & autofix |
-| `pnpm format` | Biome formatter |
-| `pnpm db:generate` | Generate SQL migrations from the Drizzle schema |
-| `pnpm db:migrate` | Apply migrations via `src/lib/db/migrate.ts` |
-| `pnpm db:studio` | Launch Drizzle Studio UI |
-| `pnpm auth:generate` | Regenerate Better Auth schema file |
-| `pnpm auth:migrate` | Shortcut for pushing auth tables (`pnpm db:push`) |
+| `bun dev` | Run the Next.js development server |
+| `bun build` / `bun start` | Production build & serve |
+| `bun lint` / `bun lint:fix` | Biome static analysis & autofix |
+| `bun format` | Biome formatter |
+| `bun db:generate` | Generate SQL migrations from the Drizzle schema |
+| `bun db:migrate` | Apply migrations via `src/lib/db/migrate.ts` |
+| `bun db:studio` | Launch Drizzle Studio UI |
+| `bun auth:generate` | Regenerate Better Auth schema file |
+| `bun auth:migrate` | Shortcut for pushing auth tables (`bun db:push`) |
 
 ## Database + Auth Flow
 1. Define entities inside `src/lib/db/schema` or `src/lib/auth/schema.ts`.
-2. Run `pnpm db:generate` to create SQL migrations in `src/lib/db/migrations`.
-3. Apply them locally with `pnpm db:migrate` or push to Neon with `pnpm db:push`.
+2. Run `bun db:generate` to create SQL migrations in `src/lib/db/migrations`.
+3. Apply them locally with `bun db:migrate` or push to Neon with `bun db:push`.
 4. Better Auth uses the Drizzle adapter defined in `src/lib/auth/index.ts`. Update providers, secrets, and session logic there.
 
 ## Extending the Stack
@@ -80,7 +80,7 @@ The sample dashboard lives at `/dashboard` and expects an authenticated user. `s
 - Customize middleware, global styles, or metadata via `src/app/layout.tsx` and `globals.css`.
 
 ## Quality Gates
-Husky runs `pnpm lint` before each commit. To skip temporarily, pass `HUSKY=0` (not recommended). CI/CD can reuse the same scripts.
+Husky runs `bun lint` before each commit. To skip temporarily, pass `HUSKY=0` (not recommended). CI/CD can reuse the same scripts.
 
 ---
 Questions or ideas? File an issue or start sketching directly in `src/app`. Happy hacking! 🚀
