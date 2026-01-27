@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { ToolLoopAgent } from "ai";
+import { stepCountIs, ToolLoopAgent } from "ai";
 import { getGeoGebraDocsTool } from "../context7";
 
 export const geogebraAgent = new ToolLoopAgent({
@@ -7,4 +7,5 @@ export const geogebraAgent = new ToolLoopAgent({
   tools: {
     getGeoGebraDocsTool,
   },
+  stopWhen: stepCountIs(20),
 });
