@@ -1,0 +1,83 @@
+{
+  "name": "FableLab Development",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": false,
+      "upgradePackages": true
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "streetsidesoftware.code-spell-checker",
+        "eamodio.gitlens",
+        "biomejs.biome",
+        "prisma.prisma-vscode",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.codeActionsOnSave": {
+          "quickfix.biome": "explicit",
+          "source.fixAll.eslint": "explicit"
+        },
+        "eslint.workingDirectories": ["src"],
+        "tailwindCSS.experimental.classRegex": [["cva\\(([^)]*))", "cva-$2"]],
+        "files.associations": {
+          "*.css": "tailwindcss"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        }
+      }
+    }
+  },
+  "postCreateCommand": "pnpm install",
+  "forwardPorts": [3000, 5432],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "openPreview"
+    },
+    "5432": {
+      "label": "PostgreSQL"
+    }
+  },
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node_modules",
+    "target=${containerWorkspaceFolder}/node_modules",
+    "type=volume"
+  ],
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
+  "runArgs": ["--init"],
+  "secrets": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string for Neon DB",
+      "restart": true
+    },
+    "BETTER_AUTH_SECRET": {
+      "description": "Better Auth secret key",
+      "restart": false
+    }
+  }
+}
