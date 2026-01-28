@@ -1,0 +1,5 @@
+[x] Database: Create `lessons`, `scenes`, and `quizzes` tables with Drizzle
+- Created `src/lib/db/schema/lessons.ts`
+- Created `src/lib/db/schema/scenes.ts`
+- Updated `src/lib/db/index.ts` to export new schemas
+- Generated migration `0002_medical_shiver_man.sql`
