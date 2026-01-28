@@ -2,8 +2,8 @@
 
 import { SkipBack, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface SceneNavigationProps {
   currentSceneIndex: number;
@@ -38,15 +38,16 @@ export function SceneNavigation({
 
           <div className="flex items-center gap-2.5">
             {dots.map((dotIndex) => (
-              <div
-                key={dotIndex}
+              <button
+                key={`dot-${dotIndex}`}
+                type="button"
                 className={cn(
                   "size-2.5 rounded-full transition-all duration-300",
                   dotIndex === currentSceneIndex
                     ? "bg-indigo-500 scale-125 ring-4 ring-indigo-500/20"
                     : dotIndex < currentSceneIndex
-                    ? "bg-indigo-500/50"
-                    : "bg-slate-700 hover:bg-slate-600 cursor-pointer"
+                      ? "bg-indigo-500/50"
+                      : "bg-slate-700 hover:bg-slate-600 cursor-pointer",
                 )}
                 aria-label={`Go to scene ${dotIndex + 1}`}
               />
@@ -59,7 +60,8 @@ export function SceneNavigation({
             disabled={isNextDisabled || currentSceneIndex === totalScenes - 1}
             className={cn(
               "font-bold px-6",
-              !isNextDisabled && "bg-indigo-600 hover:bg-indigo-500 text-white border-none shadow-lg shadow-indigo-900/40"
+              !isNextDisabled &&
+                "bg-indigo-600 hover:bg-indigo-500 text-white border-none shadow-lg shadow-indigo-900/40",
             )}
           >
             {currentSceneIndex === totalScenes - 1 ? "Finish" : "Next"}

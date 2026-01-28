@@ -38,7 +38,7 @@ export function ScenePlayer({
     }
     setAudioProgress(0);
     setCurrentTime(0);
-  }, [scene.id, scene.narrationUrl]);
+  }, [scene.narrationUrl]);
 
   // Audio event handlers
   const handleLoadedMetadata = useCallback(() => {
@@ -209,6 +209,7 @@ export function ScenePlayer({
 
       {/* Hidden Audio Element */}
       {scene.narrationUrl && (
+        // biome-ignore lint/a11y/useMediaCaption: text is provided via SceneNarrative
         <audio
           ref={audioRef}
           src={scene.narrationUrl}

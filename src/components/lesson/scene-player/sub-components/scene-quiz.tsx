@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Check, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type Quiz } from "../../types/scene.types";
+import type { Quiz } from "../../types/scene.types";
 
 interface SceneQuizProps {
   quiz: Quiz;
@@ -45,7 +45,8 @@ export function SceneQuiz({ quiz, onComplete, onContinue }: SceneQuizProps) {
       <div className="space-y-3 mb-8">
         {quiz.options.map((option, index) => (
           <button
-            key={index}
+            key={option}
+            type="button"
             onClick={() => handleAnswerSelect(index)}
             disabled={showResult}
             className={cn(
@@ -57,9 +58,9 @@ export function SceneQuiz({ quiz, onComplete, onContinue }: SceneQuizProps) {
                     : "bg-red-500/10 border-red-500 text-red-400"
                   : "bg-indigo-500/10 border-indigo-500 text-indigo-100"
                 : showResult && index === quiz.correctIndex
-                ? "bg-green-500/10 border-green-500 text-green-400"
-                : "bg-slate-800/40 border-slate-700 text-slate-300 hover:bg-slate-800/60",
-              showResult && "cursor-default"
+                  ? "bg-green-500/10 border-green-500 text-green-400"
+                  : "bg-slate-800/40 border-slate-700 text-slate-300 hover:bg-slate-800/60",
+              showResult && "cursor-default",
             )}
           >
             <div className="flex items-center justify-between">
@@ -85,9 +86,9 @@ export function SceneQuiz({ quiz, onComplete, onContinue }: SceneQuizProps) {
           <div
             className={cn(
               "p-5 rounded-xl mb-6 border-l-4",
-              isCorrect 
-                ? "bg-green-500/5 border-green-500 text-green-100" 
-                : "bg-amber-500/5 border-amber-500 text-amber-100"
+              isCorrect
+                ? "bg-green-500/5 border-green-500 text-green-100"
+                : "bg-amber-500/5 border-amber-500 text-amber-100",
             )}
           >
             <p className="font-bold flex items-center gap-2 mb-2 uppercase tracking-wider text-xs">

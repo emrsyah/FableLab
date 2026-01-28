@@ -1,11 +1,11 @@
 "use client";
 
-import { Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
-import { type ScenePlaybackState } from "../../hooks/use-scene-state";
+import type { ScenePlaybackState } from "../../hooks/use-scene-state";
 
 interface SceneAudioProps {
   status: ScenePlaybackState;
@@ -29,7 +29,7 @@ export function SceneAudio({
   hasAudio,
 }: SceneAudioProps) {
   const formatTime = (seconds: number) => {
-    if (!seconds || isNaN(seconds)) return "--:--";
+    if (!seconds || Number.isNaN(seconds)) return "--:--";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -53,7 +53,9 @@ export function SceneAudio({
               variant="secondary"
               size="icon"
               onClick={onTogglePlay}
-              disabled={!hasAudio || status === "loading" || status === "quiz_gate"}
+              disabled={
+                !hasAudio || status === "loading" || status === "quiz_gate"
+              }
               className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full size-10 flex items-center justify-center p-0"
             >
               {status === "playing" ? (
@@ -78,7 +80,11 @@ export function SceneAudio({
           </div>
 
           <div className="flex-1">
-            <Progress value={progress} className="h-1.5 bg-slate-800" indicatorClassName="bg-indigo-500" />
+            <Progress
+              value={progress}
+              className="h-1.5 bg-slate-800"
+              indicatorClassName="bg-indigo-500"
+            />
           </div>
 
           <span className="text-xs font-medium text-slate-400 min-w-[70px] text-right tabular-nums">
