@@ -7,6 +7,7 @@ import type { Scene } from "../types/scene.types";
 
 interface SceneVisualProps {
   scene: Scene;
+  currentSceneIndex?: number;
   className?: string;
 }
 

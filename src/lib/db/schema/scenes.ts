@@ -1,4 +1,11 @@
-import { boolean, integer, json, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  json,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { lessons } from "./lessons";
 
@@ -31,9 +38,17 @@ export const scenes = pgTable("scenes", {
   // Quiz (nullable - only for milestone scenes)
   hasQuiz: boolean("has_quiz").default(false),
 
+  narrationAlignment: json("narration_alignment").$type<{
+    characters: string[];
+    character_start_times_seconds: number[];
+    character_end_times_seconds: number[];
+  }>(),
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const quizzes = pgTable("quizzes", {
@@ -48,7 +63,9 @@ export const quizzes = pgTable("quizzes", {
   options: json("options").$type<string[]>().notNull(), // 4 options
   correctIndex: integer("correct_index").notNull(), // 0-3
   explanation: text("explanation").notNull(),
-  
+
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });

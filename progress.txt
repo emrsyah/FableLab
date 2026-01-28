@@ -2,3 +2,7 @@
 - [x] **tRPC Router**: `scenes.getByLessonId`, `scenes.create`, `quizzes.submit`
 - [x] **Components**: `ScenePlayer` (container with state machine) - Main scene player component with audio controls, visual display, story text, quiz gate handling, and navigation controls
 - [x] **Components**: `SceneVisual` (image/GeoGebra conditional render) - Reusable component for scene visuals supporting image, GeoGebra, and video types with learning objective overlay, scene number badge, and fallback states
+- [x] **Database**: Add `narrationAlignment` JSON field to `scenes` table for karaoke support
+- [x] **Components**: `SceneNarrative` (karaoke text) - Component that highlights story text based on audio timestamps with character-level precision
+- [x] **Components**: Refactored `ScenePlayer` to integrate `SceneNarrative` and `SceneVisual`, added `currentTime` synchronization
+- [x] Components: Refactored ScenePlayer sub-components (SceneNarrative, SceneAudio, SceneQuiz, SceneNavigation) for better modularity and premium UI/UX.
