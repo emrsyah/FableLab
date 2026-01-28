@@ -1,2 +1,3 @@
 - [x] **Database**: Create `scenes` and `quizzes` tables with Drizzle (Verified existing implementation)
 - [x] **tRPC Router**: `scenes.getByLessonId`, `scenes.create`, `quizzes.submit`
+- [x] **Components**: `ScenePlayer` (container with state machine) - Main scene player component with audio controls, visual display, story text, quiz gate handling, and navigation controls
