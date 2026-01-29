@@ -9,6 +9,7 @@ interface GeoGebraWidgetProps {
   height?: number;
   onInit?: (api: any) => void;
   onUpdate?: (state: string) => void;
+  onError?: (error: string) => void;
   className?: string;
 }
 
@@ -18,11 +19,17 @@ export function GeoGebraWidget({
   height = 600,
   onInit,
   onUpdate,
+  onError,
   className = "",
 }: GeoGebraWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [_isLoaded, setIsLoaded] = useState(false);
+
+  const onInitRef = useRef(onInit);
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+  onInitRef.current = onInit;
 
   useEffect(() => {
     if (!config) return;
@@ -48,11 +55,11 @@ export function GeoGebraWidget({
 
       // Create applet
       const params = {
-        appName: configData.appName,
+        appName: "classic",
         width,
         height,
-        showToolBar: true,
-        showAlgebraInput: true,
+        showToolBar: false,
+        showAlgebraInput: false,
         showMenuBar: false,
         enableRightClick: true,
         showResetIcon: true,
@@ -66,13 +73,32 @@ export function GeoGebraWidget({
           if (configData.xml) {
             api.setXML(configData.xml);
           } else if (configData.commands && configData.commands.length > 0) {
+            // Execute commands with error handling
+            const errors: string[] = [];
+
             configData.commands.forEach((cmd: string) => {
-              api.evalCommand(cmd);
+              try {
+                const result = api.evalCommand(cmd);
+                // GeoGebra returns false for failed commands
+                if (result === false) {
+                  errors.push(`Failed: ${cmd}`);
+                }
+              } catch (error) {
+                errors.push(
+                  `Error in "${cmd}": ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
             });
+
+            // Report errors if any
+            if (errors.length > 0) {
+              console.error("GeoGebra command errors:", errors);
+              onErrorRef.current?.(errors.join("\n"));
+            }
           }
 
-          // Notify parent
-          onInit?.(api);
+          // Notify parent using ref to avoid dependency issues
+          onInitRef.current?.(api);
         },
       };
 
@@ -88,8 +114,9 @@ export function GeoGebraWidget({
         containerRef.current.innerHTML = "";
       }
       apiRef.current = null;
+      setIsLoaded(false);
     };
-  }, [config, width, height, onInit]);
+  }, [config, width, height]);
 
   if (!config) {
     return (

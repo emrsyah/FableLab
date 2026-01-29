@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   PromptInput,
   PromptInputFooter,
@@ -71,6 +71,8 @@ export default function PlaygroundPage() {
     }
   };
 
+  const [_api, setApi] = useState<any>(null);
+
   const handleReset = () => {
     setConfig(null);
     setApi(null);
@@ -78,7 +80,15 @@ export default function PlaygroundPage() {
     setPrompt("");
   };
 
-  const [api, setApi] = useState<any>(null);
+  // Memoize the onInit callback to prevent re-renders
+  const handleGeoGebraInit = useCallback((ggbApi: any) => {
+    setApi(ggbApi);
+  }, []);
+
+  // Handle GeoGebra command errors
+  const handleGeoGebraError = useCallback((errorMsg: string) => {
+    setError(`GeoGebra Error: ${errorMsg}`);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -243,7 +253,8 @@ export default function PlaygroundPage() {
                     config={config}
                     width={800}
                     height={600}
-                    onInit={(ggbApi) => setApi(ggbApi)}
+                    onInit={handleGeoGebraInit}
+                    onError={handleGeoGebraError}
                     className="border-0"
                   />
                 </CardContent>
