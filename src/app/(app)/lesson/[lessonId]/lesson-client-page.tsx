@@ -27,7 +27,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
     {
       enabled: !!lessonId, // Only run query if lessonId is available
       staleTime: Infinity, // Scenes are static for a given lesson
-      cacheTime: Infinity,
+      gcTime: Infinity,
     }
   );
 

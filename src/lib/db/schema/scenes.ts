@@ -26,7 +26,7 @@ export const scenes = pgTable("scenes", {
   // Visual
   visualType: text("visual_type", {
     enum: ["image", "geogebra", "video"],
-  }).default("image"),
+  }).default("image").notNull(),
   imageUrl: text("image_url"),
   geogebraConfig: text("geogebra_config"), // XML or commands
 
@@ -34,9 +34,14 @@ export const scenes = pgTable("scenes", {
   narrationUrl: text("narration_url"),
   narrationDuration: integer("narration_duration"), // seconds
   backgroundMusicUrl: text("background_music_url"),
+  narrationAlignment: json("narration_alignment").$type<{
+    characters: string[];
+    character_start_times_seconds: number[];
+    character_end_times_seconds: number[];
+  } | null>(),
 
   // Quiz (nullable - only for milestone scenes)
-  hasQuiz: boolean("has_quiz").default(false),
+  hasQuiz: boolean("has_quiz").default(false).notNull(),
 
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),

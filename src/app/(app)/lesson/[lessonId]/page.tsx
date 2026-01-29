@@ -2,9 +2,9 @@ import LessonClientPage from "./lesson-client-page";
 import React from "react";
 
 type LessonPageProps = {
-  params: {
+  params: Promise<{
     lessonId: string;
-  };
+  }>;
 };
 
 export default function LessonPage({ params }: LessonPageProps) {

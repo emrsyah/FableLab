@@ -302,7 +302,7 @@ export function ScenePlayer({
           <span className="text-sm text-muted-foreground">
             Scene {currentSceneIndex + 1} of {totalScenes}
           </span>
-          <h2 className="text-xl font-semibold">{scene.title}</h2>
+          <h2 className="text-xl font-semibold text-white">{scene.title}</h2>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Auto-advance</span>

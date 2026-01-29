@@ -26,7 +26,7 @@ export function AuthForm() {
         });
 
         if (error) {
-          setError(error.message);
+          setError(error.message || "An unknown error occurred");
         } else {
           console.log("Sign up successful:", data);
         }
@@ -38,7 +38,7 @@ export function AuthForm() {
         });
 
         if (error) {
-          setError(error.message);
+          setError(error.message || "An unknown error occurred");
         } else {
           console.log("Sign in successful:", data);
         }

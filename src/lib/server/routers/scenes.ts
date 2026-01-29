@@ -16,7 +16,11 @@ export const scenesRouter = router({
             id: quizzes.id,
             question: quizzes.question,
             options: quizzes.options,
-            // Exclude correctIndex and explanation to prevent cheating
+            correctIndex: quizzes.correctIndex,
+            explanation: quizzes.explanation,
+            sceneId: quizzes.sceneId,
+            createdAt: quizzes.createdAt,
+            updatedAt: quizzes.updatedAt,
           },
         })
         .from(scenes)

@@ -79,7 +79,7 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     setPrompt,
     files,
     messages,
-    isLoading: generateLessonMutation.isLoading,
+    isLoading: generateLessonMutation.isPending,
     handleFileSelect,
     removeFile,
     handleSend,
