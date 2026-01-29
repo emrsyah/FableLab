@@ -28,6 +28,7 @@ export default function RootLayout({
     <TRPCProvider>
       <html lang="en">
         <body
+          suppressHydrationWarning
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}

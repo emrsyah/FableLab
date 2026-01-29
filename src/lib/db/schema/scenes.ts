@@ -38,12 +38,6 @@ export const scenes = pgTable("scenes", {
   // Quiz (nullable - only for milestone scenes)
   hasQuiz: boolean("has_quiz").default(false),
 
-  narrationAlignment: json("narration_alignment").$type<{
-    characters: string[];
-    character_start_times_seconds: number[];
-    character_end_times_seconds: number[];
-  }>(),
-
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")

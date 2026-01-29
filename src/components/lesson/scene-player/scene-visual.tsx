@@ -1,13 +1,12 @@
 "use client";
 
-import { motion } from "motion/react";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Scene } from "../types/scene.types";
 
 interface SceneVisualProps {
   scene: Scene;
-  currentSceneIndex?: number;
   className?: string;
 }
 
@@ -16,14 +15,7 @@ interface SceneVisualProps {
  * Supports image, GeoGebra, and video visual types with fallback
  */
 export function SceneVisual({ scene, className }: SceneVisualProps) {
-  const {
-    visualType,
-    imageUrl,
-    geogebraConfig,
-    title,
-    learningObjective,
-    sceneNumber,
-  } = scene;
+  const { visualType, imageUrl, geogebraConfig, title, learningObjective, sceneNumber } = scene;
 
   const renderVisual = () => {
     switch (visualType) {
@@ -44,7 +36,12 @@ export function SceneVisual({ scene, className }: SceneVisualProps) {
 
       case "geogebra":
         if (geogebraConfig) {
-          return <GeoGebraPlaceholder title={title} config={geogebraConfig} />;
+          return (
+            <GeoGebraPlaceholder
+              title={title}
+              config={geogebraConfig}
+            />
+          );
         }
         return <DefaultVisual title={title} />;
 
@@ -70,7 +67,7 @@ export function SceneVisual({ scene, className }: SceneVisualProps) {
         "group relative aspect-video w-full overflow-hidden rounded-xl",
         "bg-gradient-to-br from-slate-900 to-slate-800",
         "shadow-xl ring-1 ring-white/10",
-        className,
+        className
       )}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -109,19 +106,21 @@ function DefaultVisual({ title }: { title: string }) {
       <div className="text-center">
         <motion.div
           className="text-6xl mb-3"
-          animate={{
+          animate={{ 
             scale: [1, 1.1, 1],
-            rotate: [0, 5, -5, 0],
+            rotate: [0, 5, -5, 0]
           }}
-          transition={{
-            duration: 3,
+          transition={{ 
+            duration: 3, 
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: "easeInOut"
           }}
         >
           🔬
         </motion.div>
-        <p className="text-sm text-muted-foreground font-medium">{title}</p>
+        <p className="text-sm text-muted-foreground font-medium">
+          {title}
+        </p>
       </div>
     </div>
   );

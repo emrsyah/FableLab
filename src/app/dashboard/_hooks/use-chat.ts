@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { trpc } from "@/lib/trpc/client";
+import { useRouter } from "next/navigation";
 
 export type Message = {
   role: "user" | "ai";
@@ -14,11 +16,22 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  // Auto-scroll logic could be here, but usually needs a ref to the DOM element in the view.
-  // We'll leave the scrollRef in the component for now, or expose a ref from here.
-  // For separation of concerns, the hook manages DATA, the component manages VIEW (scrolling).
+  const generateLessonMutation = trpc.lessons.generate.useMutation({
+    onSuccess: (data) => {
+      // Redirect to the new lesson page
+      router.push(`/lesson/${data.lessonId}`);
+    },
+    onError: (error) => {
+      // Show an error message
+      const aiMessage: Message = {
+        role: "ai",
+        content: `Sorry, I failed to generate the lesson. ${error.message}`,
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    },
+  });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -41,7 +54,15 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
+
+    // For now, let's assume a default complexity.
+    // In the future, this should come from a UI selector.
+    const complexity = "Middle";
+
+    generateLessonMutation.mutate({
+      topic: prompt,
+      complexity: complexity,
+    });
 
     // Reset Input State
     setPrompt("");
@@ -51,16 +72,6 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     if (onClearInput) {
       onClearInput();
     }
-
-    // Simulate AI Response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        role: "ai",
-        content: "That's a fascinating topic! Gravity is the force that pulls objects towards the center of the Earth. In our lesson, I've prepared 3 scenes demonstrating how mass and distance affect this force. Shall we start exploring?",
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsLoading(false);
-    }, 1500);
   };
 
   return {
@@ -68,7 +79,7 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     setPrompt,
     files,
     messages,
-    isLoading,
+    isLoading: generateLessonMutation.isLoading,
     handleFileSelect,
     removeFile,
     handleSend,
