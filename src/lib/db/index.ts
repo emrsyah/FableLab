@@ -2,6 +2,8 @@ import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/neon-http";
 import { postsTable, usersTable } from "./schema/users";
+import { lessons } from "./schema/lessons";
+import { scenes, quizzes } from "./schema/scenes";
 
 config({ path: ".env.local" }); // or .env.local
 
@@ -16,5 +18,8 @@ export const db = drizzle({
   schema: {
     users: usersTable,
     posts: postsTable,
+    lessons,
+    scenes,
+    quizzes,
   },
 });

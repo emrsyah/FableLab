@@ -45,3 +45,9 @@ next-env.d.ts
 docker-compose.override.yml
 docker/postgres-data
 docker/pgadmin-data
+
+# agent skills
+/.gemini
+/.agent
+/.agents
+/.claude
