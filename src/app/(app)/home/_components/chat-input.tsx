@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { buttonHoverVariants } from "./dashboard-home.animations";
+import { buttonHoverVariants } from "./home-view.animations";
 import { RefObject } from "react";
 
 interface ChatInputProps {

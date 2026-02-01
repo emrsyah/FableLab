@@ -1,9 +1,9 @@
 "use client";
 
 import { authClient } from "@/lib/auth/client";
-import { User } from "lucide-react";
+import { User, Share2 } from "lucide-react";
 
-export function DashboardHeader() {
+export function HomeHeader() {
   const { data: session } = authClient.useSession();
 
   // If no session, show a skeleton or simplified placeholder
@@ -12,9 +12,9 @@ export function DashboardHeader() {
     return (
       <header className="absolute top-0 right-0 p-6 z-50 flex items-center gap-4">
         {/* New Chat Button (Always Visible) */}
-        <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all font-medium">
-          <span className="text-xl leading-none">+</span>
-          <span>New Chat</span>
+        <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-md hover:shadow-[0_0_20px_rgba(111,160,246,0.6)] hover:scale-[1.02] hover:brightness-105 border border-[#6FA0F6] transition-all duration-300 transform font-medium">
+          <Share2 size={18} />
+          <span>Share</span>
         </button>
 
         {/* Auth Skeleton */}
@@ -34,9 +34,9 @@ export function DashboardHeader() {
   return (
     <header className="absolute top-0 right-0 p-6 z-50 flex items-center gap-4">
       {/* New Chat Button */}
-      <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/20 transition-all font-medium">
-        <span className="text-xl leading-none">+</span>
-        <span>New Chat</span>
+      <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-md hover:shadow-[0_0_20px_rgba(111,160,246,0.6)] hover:scale-[1.02] hover:brightness-105 border border-[#6FA0F6] transition-all duration-300 transform font-medium">
+        <Share2 size={18} />
+        <span>Share</span>
       </button>
 
       {/* User Profile Pill */}

@@ -21,11 +21,11 @@ import {
   containerVariants,
   itemVariants,
   messageVariants,
-} from "./dashboard-home.animations";
+} from "./home-view.animations";
 import { ChatInput } from "./chat-input";
 import { useChat } from "../_hooks/use-chat";
 
-export function DashboardHome() {
+export function HomeView() {
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name || "Explorer";
   const fileInputRefReal = useRef<HTMLInputElement>(null);
