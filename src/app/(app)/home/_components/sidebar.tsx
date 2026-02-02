@@ -10,6 +10,7 @@ import {
   PieChart, 
   FlaskConical 
 } from "lucide-react";
+import Link from "next/link";
 
 export function HomeSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -90,12 +91,14 @@ export function HomeSidebar() {
                 isActive={true} 
                 isCollapsed={isCollapsed} 
               />
-              <SidebarItem 
-                icon={<History size={20} />} 
-                label="History" 
-                isActive={false} 
-                isCollapsed={isCollapsed} 
-              />
+              <Link href="/history" className="w-full">
+                <SidebarItem 
+                    icon={<History size={20} />} 
+                    label="History" 
+                    isActive={false} // Todo: dynamic active state based on path
+                    isCollapsed={isCollapsed} 
+                />
+              </Link>
               <SidebarItem 
                 icon={<PieChart size={20} />} 
                 label="Progress Tracking" 

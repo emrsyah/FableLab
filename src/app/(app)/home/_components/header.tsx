@@ -12,7 +12,7 @@ export function HomeHeader() {
     return (
       <header className="absolute top-0 right-0 p-6 z-50 flex items-center gap-4">
         {/* New Chat Button (Always Visible) */}
-        <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-md hover:shadow-[0_0_20px_rgba(111,160,246,0.6)] hover:scale-[1.02] hover:brightness-105 border border-[#6FA0F6] transition-all duration-300 transform font-medium">
+        <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_20px_rgba(111,160,246,0.8)] hover:scale-[1.02] hover:brightness-105 ring-4 ring-blue-200/80 transition-all duration-300 transform font-medium">
           <Share2 size={18} />
           <span>Share</span>
         </button>
@@ -34,7 +34,7 @@ export function HomeHeader() {
   return (
     <header className="absolute top-0 right-0 p-6 z-50 flex items-center gap-4">
       {/* New Chat Button */}
-      <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-md hover:shadow-[0_0_20px_rgba(111,160,246,0.6)] hover:scale-[1.02] hover:brightness-105 border border-[#6FA0F6] transition-all duration-300 transform font-medium">
+      <button className="flex h-12 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_20px_rgba(111,160,246,0.8)] hover:scale-[1.02] hover:brightness-105 ring-4 ring-blue-200/80 transition-all duration-300 transform font-medium">
         <Share2 size={18} />
         <span>Share</span>
       </button>

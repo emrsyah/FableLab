@@ -24,6 +24,7 @@ import {
 } from "./home-view.animations";
 import { ChatInput } from "./chat-input";
 import { useChat } from "../_hooks/use-chat";
+import { LessonLoadingOverlay } from "@/components/lesson/loading-overlay";
 
 export function HomeView() {
   const { data: session } = authClient.useSession();
@@ -40,7 +41,10 @@ export function HomeView() {
     handleFileSelect,
     removeFile,
     handleSend,
-    hasMessages
+    hasMessages,
+    generationPhase,
+    generationProgress,
+    resetGeneration
   } = useChat({
     onClearInput: () => {
       if (fileInputRefReal.current) {
@@ -222,6 +226,11 @@ export function HomeView() {
            </motion.div>
         )}
       </AnimatePresence>
+      <LessonLoadingOverlay 
+        phase={generationPhase} 
+        progress={generationProgress}
+        onContinue={resetGeneration}
+      />
     </div>
   );
 }
