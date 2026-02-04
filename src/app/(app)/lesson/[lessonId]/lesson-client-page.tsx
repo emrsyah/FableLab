@@ -7,6 +7,7 @@ import { useSceneProgress } from "@/components/lesson/hooks/use-scene-progress";
 import { Loader2, AlertTriangle, Share2, User, ChevronRight } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
+import { UserProfilePill } from "@/components/user-profile-pill";
 
 type LessonClientPageProps = {
   lessonId: string;
@@ -109,7 +110,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
       <header className="flex items-center justify-between px-8 py-6 shrink-0 bg-transparent">
         <div className="flex flex-col">
            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-             Lesson: {currentScene.title || "Untitled Lesson"} 
+             {currentScene.hasQuiz ? "Quiz" : "Lesson"}: {currentScene.title || "Untitled"} 
            </h1>
            <p className="text-slate-500 text-sm mt-1 max-w-2xl truncate">
              {currentScene.storyText ? currentScene.storyText.substring(0, 100) + "..." : "Explore this interactive lesson."}
@@ -125,26 +126,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
 
            {/* User Profile */}
            {session?.user && (
-             <div className="flex items-center gap-3 bg-white p-1 pl-1.5 pr-4 rounded-full border border-slate-100 shadow-sm">
-                {session.user.image ? (
-                  <img src={session.user.image} alt="User" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <User size={16} />
-                  </div>
-                )}
-                <div className="text-left hidden sm:block">
-                   <div className="text-xs font-bold text-slate-700 leading-tight">
-                     {session.user.name || "Student"}
-                   </div>
-                   <div className="text-[10px] text-slate-400 font-medium truncate max-w-[100px]">
-                     {session.user.email}
-                   </div>
-                </div>
-                <div className="text-slate-400">
-                  <ChevronRight size={14} className="rotate-90" />
-                </div>
-             </div>
+             <UserProfilePill user={session.user} />
            )}
         </div>
       </header>

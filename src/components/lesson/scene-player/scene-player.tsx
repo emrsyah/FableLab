@@ -221,6 +221,7 @@ export function ScenePlayer({
                         }
                     }
                 }} 
+                onBack={() => setIsQuizMode(false)}
             />
         </div>
       ) : (

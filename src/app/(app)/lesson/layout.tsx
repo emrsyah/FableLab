@@ -1,5 +1,7 @@
 import { HomeSidebar } from "@/app/(app)/home/_components/sidebar";
 import { HomeHeader } from "@/app/(app)/home/_components/header";
+import { DottedBackground } from "@/components/ui/dotted-background";
+import { DoubleLayerWrapper } from "@/components/ui/double-layer-wrapper";
 
 export default function LessonLayout({
   children,
@@ -14,20 +16,14 @@ export default function LessonLayout({
       {/* Main Content Area - Single Card Style for Lesson */}
       <main className="flex-1 relative flex flex-col h-full overflow-hidden p-2 pl-0 md:pl-0">
         {/* Dotted Background Pattern directly on main area */}
-        <div className="relative flex-1 h-full w-full rounded-3xl overflow-hidden border border-slate-200/60 shadow-sm bg-white">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply z-0"
-            style={{
-              backgroundImage: "radial-gradient(#94a3b8 1.5px, transparent 1.5px)",
-              backgroundSize: "24px 24px",
-            }}
-          />
+        <DoubleLayerWrapper>
+          <DottedBackground className="opacity-40" />
           
           {/* Content Container */}
           <div className="relative z-10 w-full h-full flex flex-col">
             {children}
           </div>
-        </div>
+        </DoubleLayerWrapper>
       </main>
     </div>
   );

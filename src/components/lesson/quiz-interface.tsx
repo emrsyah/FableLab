@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Check, X, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Quiz } from "./types/scene.types";
+import { HangingBanner } from "@/components/ui/hanging-banner";
 
 interface QuizInterfaceProps {
   quiz: Quiz;
   sceneTitle: string;
   lessonTopic: string;
   onComplete: (isCorrect: boolean) => void;
+  onBack: () => void;
 }
 
 const CARD_COLORS = [
@@ -19,9 +21,10 @@ const CARD_COLORS = [
   { bg: "bg-[#A56EFF]", border: "border-[#ECE2FF]", shadow: "shadow-[0px_0px_10px_#ece2ff]" },
 ];
 
-export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: QuizInterfaceProps) {
+export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete, onBack }: QuizInterfaceProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showBorder, setShowBorder] = useState(false);
 
   const handleSubmit = () => {
     if (selectedOption === null) return;
@@ -39,32 +42,26 @@ export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: Qui
   const isWrong = isSubmitted && selectedOption !== quiz.correctIndex;
 
   return (
-    <div className="w-full h-full min-h-[600px] flex flex-col relative rounded-[12px] overflow-hidden bg-white shadow-[0px_1px_4px_1px_#ebebf5]">
+    <div className="w-full h-full min-h-[600px] flex flex-col relative">
       
-      {/* Background Dot Pattern */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-100 z-0 left-[-7px] top-[7px]"
-        style={{
-          backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", // Approx match for dot pattern
-          backgroundSize: "24px 24px",
-        }}
-      />
+
 
       {/* Main Content Container - Centered */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-[1253px] mx-auto pt-[24px] h-full">
         
         {/* Header Section */}
-        <div className="flex flex-col gap-[4px] items-center text-center w-full mb-[40px]">
-           <h2 className="font-sans font-medium text-[24px] leading-[1.4] tracking-[-0.24px] text-black">
-             Quiz: {lessonTopic}
-           </h2>
-           <p className="font-sans font-medium text-[16px] leading-[1.5] tracking-[-0.48px] text-[#929496]">
-             {sceneTitle}
-           </p>
-        </div>
+        <HangingBanner 
+            text="Let's Check Your Understanding!" 
+            onAnimationComplete={() => setShowBorder(true)}
+        />
 
         {/* Question Section - Blue Box Style */}
-        <div className="relative w-full max-w-[800px] bg-white rounded-[20px] shadow-[0px_4px_24px_rgba(0,0,0,0.04)] border border-[#EBEBF5] p-12 flex flex-col items-center justify-center text-center mb-12">
+        <div 
+            className={cn(
+                "relative w-full max-w-[800px] bg-white rounded-[20px] shadow-[0px_4px_24px_rgba(0,0,0,0.04)] border-[14px] p-12 flex flex-col items-center justify-center text-center mb-12 z-40 transition-colors duration-700 ease-in",
+                showBorder ? "border-[#dbeafe]" : "border-transparent"
+            )}
+        >
            {/* Decorative Elements could go here (e.g., characters from screenshot) */}
            
            <h3 className="text-[28px] font-bold text-[#1C1C1E] leading-[1.3] text-center max-w-[600px]">
@@ -78,7 +75,7 @@ export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: Qui
         </p>
 
         {/* Options - Horizontal/Grid Layout */}
-        <div className="flex flex-wrap justify-center gap-[20px] w-full max-w-[1240px] mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[20px] w-full max-w-[1240px] mb-12 px-4">
           {quiz.options.map((option: string, index: number) => {
              const isSelected = selectedOption === index;
              const showCorrect = isSubmitted && index === quiz.correctIndex;
@@ -93,7 +90,7 @@ export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: Qui
                  onClick={() => !isSubmitted && setSelectedOption(index)}
                  disabled={isSubmitted}
                  className={cn(
-                   "relative flex flex-col items-center justify-center w-[280px] h-[220px] p-6 rounded-[20px] border-4 transition-all duration-300 transform",
+                   "relative flex flex-col items-center justify-center w-full min-h-[180px] h-full p-4 rounded-[20px] border-4 transition-all duration-300 transform",
                    // If not selected, show colorful state
                    !isSelected && !isSubmitted && `${colorStyles.bg} ${colorStyles.border} ${colorStyles.shadow} hover:scale-[1.02] text-white`,
                    
@@ -107,7 +104,7 @@ export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: Qui
                    showWrong && "ring-red-500"
                  )}
                >
-                 <span className="text-[24px] font-bold text-center leading-tight drop-shadow-sm">
+                 <span className="text-[18px] font-bold text-center leading-tight drop-shadow-sm">
                    {option}
                  </span>
                  
@@ -124,18 +121,27 @@ export function QuizInterface({ quiz, sceneTitle, lessonTopic, onComplete }: Qui
         
         {/* Footer / Submit Button */}
         <div className="w-full flex justify-center pb-12">
-           <button
-             onClick={handleSubmit}
-             disabled={selectedOption === null || isSubmitted}
-             className={cn(
-               "flex items-center justify-center w-[260px] h-[56px] rounded-full font-bold text-white text-[18px] shadow-lg transition-all duration-300",
-               selectedOption !== null && !isSubmitted
-                 ? "bg-[radial-gradient(169.4%_84.49%_at_50%_50%,#6FA0F6_0%,#568DEF_48.96%,#3C7AE8_100%)] hover:shadow-blue-500/40 hover:scale-[1.02]" 
-                 : "bg-[#E5E5EA] text-[#AEAEB2] cursor-not-allowed shadow-none"
-             )}
-           >
-             Submit Answers
-           </button>
+            <button
+              onClick={handleSubmit}
+              disabled={selectedOption === null || isSubmitted}
+              className={cn(
+                "flex items-center justify-center w-[260px] h-[56px] rounded-full font-bold text-white text-[18px] shadow-lg transition-all duration-300",
+                selectedOption !== null && !isSubmitted
+                  ? "bg-[radial-gradient(169.4%_84.49%_at_50%_50%,#6FA0F6_0%,#568DEF_48.96%,#3C7AE8_100%)] hover:shadow-blue-500/40 hover:scale-[1.02]" 
+                  : "bg-[#E5E5EA] text-[#AEAEB2] cursor-not-allowed shadow-none"
+              )}
+            >
+              Submit Answers
+            </button>
+
+            {isSubmitted && (
+              <button
+                onClick={onBack}
+                className="ml-4 flex items-center justify-center w-[260px] h-[56px] rounded-full font-bold text-slate-600 bg-white border border-slate-200 text-[18px] shadow-sm hover:bg-slate-50 transition-all duration-300"
+              >
+                Back to Lesson
+              </button>
+            )}
         </div>
 
       </div>

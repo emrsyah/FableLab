@@ -1,5 +1,7 @@
 import { HomeSidebar } from "./_components/sidebar";
 import { HomeHeader } from "./_components/header";
+import { DottedBackground } from "@/components/ui/dotted-background";
+import { DoubleLayerWrapper } from "@/components/ui/double-layer-wrapper";
 
 export default function HomeLayout({
   children,
@@ -14,17 +16,9 @@ export default function HomeLayout({
       {/* Main Content Area - Double Layer Card Style */}
       <main className="flex-1 relative flex flex-col h-full overflow-hidden p-2 pl-0 md:pl-0">
         {/* Outer layer */}
-        <div className="h-full w-full rounded-3xl bg-white/70 p-1 shadow-sm">
-          {/* Inner layer */}
-          <div className="relative flex flex-col h-full w-full rounded-2xl bg-white overflow-hidden border border-white/50">
+        <DoubleLayerWrapper>
             {/* Dotted Background Pattern */}
-            <div
-              className="absolute inset-0 pointer-events-none opacity-60 mix-blend-multiply"
-              style={{
-                backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-              }}
-            />
+            <DottedBackground />
 
             {/* Floating Header */}
             <HomeHeader />
@@ -33,8 +27,7 @@ export default function HomeLayout({
             <div className="relative z-10 flex-1 w-full h-full">
               {children}
             </div>
-          </div>
-        </div>
+        </DoubleLayerWrapper>
       </main>
     </div>
   );
