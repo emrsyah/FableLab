@@ -49,10 +49,10 @@ export default function Home() {
                   details.
                 </p>
                 <Link
-                  href="/dashboard"
+                  href="/home"
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                 >
-                  Go to Dashboard →
+                  Go to Home →
                 </Link>
               </div>
             )}
@@ -66,10 +66,10 @@ export default function Home() {
           </h3>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              href="/dashboard"
+              href="/home"
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
             >
-              Dashboard
+              Home
             </Link>
             <button
               type="button"

@@ -22,7 +22,7 @@ export function AuthForm() {
           email,
           password,
           name,
-          callbackURL: "/dashboard",
+          callbackURL: "/home",
         });
 
         if (error) {
@@ -34,7 +34,7 @@ export function AuthForm() {
         const { data, error } = await authClient.signIn.email({
           email,
           password,
-          callbackURL: "/dashboard",
+          callbackURL: "/home",
         });
 
         if (error) {
@@ -55,7 +55,7 @@ export function AuthForm() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: "/home",
       });
     } catch (err) {
       setError("Google sign in failed");

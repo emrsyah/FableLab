@@ -21,11 +21,12 @@ import {
   containerVariants,
   itemVariants,
   messageVariants,
-} from "./dashboard-home.animations";
+} from "./home-view.animations";
 import { ChatInput } from "./chat-input";
 import { useChat } from "../_hooks/use-chat";
+import { LessonLoadingOverlay } from "@/components/lesson/loading-overlay";
 
-export function DashboardHome() {
+export function HomeView() {
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name || "Explorer";
   const fileInputRefReal = useRef<HTMLInputElement>(null);
@@ -40,7 +41,10 @@ export function DashboardHome() {
     handleFileSelect,
     removeFile,
     handleSend,
-    hasMessages
+    hasMessages,
+    generationPhase,
+    generationProgress,
+    resetGeneration
   } = useChat({
     onClearInput: () => {
       if (fileInputRefReal.current) {
@@ -222,6 +226,11 @@ export function DashboardHome() {
            </motion.div>
         )}
       </AnimatePresence>
+      <LessonLoadingOverlay 
+        phase={generationPhase} 
+        progress={generationProgress}
+        onContinue={resetGeneration}
+      />
     </div>
   );
 }
