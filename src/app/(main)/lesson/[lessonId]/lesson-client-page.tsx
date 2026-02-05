@@ -1,14 +1,24 @@
 "use client";
 
-import { AlertTriangle, Loader2, RefreshCw, Share2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Music,
+  RefreshCw,
+  Share2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { GenerationOverlay } from "@/components/lesson/generation-overlay";
 import { useSceneProgress } from "@/components/lesson/hooks/use-scene-progress";
 import { ScenePlayer } from "@/components/lesson/scene-player/scene-player";
-import { UserProfilePill } from "@/components/user-profile-pill";
 import { authClient } from "@/lib/auth/client";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 
 type LessonClientPageProps = {
   lessonId: string;
@@ -24,6 +34,10 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // Audio control state (lifted from ScenePlayer for header access)
+  const [isNarratorActive, setIsNarratorActive] = useState(true);
+  const [isMusicActive, setIsMusicActive] = useState(true);
 
   // Get generation params from URL (passed when redirecting from create page)
   const targetAge = searchParams.get("targetAge") || "middle";
@@ -169,7 +183,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Lesson Header */}
-      <header className="flex items-center justify-between px-8 py-6 shrink-0 bg-transparent">
+      <header className="flex items-center justify-between px-8 py-4 shrink-0 bg-transparent">
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             {currentScene.hasQuiz ? "Quiz" : "Lesson"}:{" "}
@@ -182,7 +196,37 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Narrator Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsNarratorActive(!isNarratorActive)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
+              isNarratorActive
+                ? "bg-[#3B82F6] text-white border-[#3B82F6] shadow-md shadow-blue-500/20"
+                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200",
+            )}
+          >
+            {isNarratorActive ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            <span>{isNarratorActive ? "Narrator On" : "Narrator Off"}</span>
+          </button>
+
+          {/* Music Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsMusicActive(!isMusicActive)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
+              isMusicActive
+                ? "bg-[#3B82F6] text-white border-[#3B82F6] shadow-md shadow-blue-500/20"
+                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200",
+            )}
+          >
+            <Music size={16} />
+            <span>{isMusicActive ? "Music On" : "Music Off"}</span>
+          </button>
+
           {/* Share Button */}
           <button
             type="button"
@@ -191,13 +235,11 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
             <Share2 size={16} />
             <span>Share</span>
           </button>
-
-          {/* User Profile */}
-          {session?.user && <UserProfilePill user={session.user} />}
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden relative px-8 pb-8 custom-scrollbar">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden relative px-8 pb-24 custom-scrollbar">
         <ScenePlayer
           scene={currentScene}
           quiz={currentScene.quiz}
@@ -209,8 +251,42 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
           onAutoAdvanceChange={setAutoAdvance}
           onQuizComplete={handleQuizComplete}
           onSceneComplete={handleSceneComplete}
+          isNarratorActive={isNarratorActive}
+          isMusicActive={isMusicActive}
+          onToggleNarrator={() => setIsNarratorActive(!isNarratorActive)}
+          onToggleMusic={() => setIsMusicActive(!isMusicActive)}
         />
       </div>
+
+      {/* Sticky Footer Navigation */}
+      <footer className="sticky bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 px-8 py-4 z-50">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <button
+            type="button"
+            onClick={handlePrevScene}
+            disabled={currentSceneIndex === 0}
+            className="flex items-center gap-2 px-5 py-2.5 text-slate-500 hover:text-slate-700 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-slate-50"
+          >
+            <ChevronLeft size={20} />
+            Previous
+          </button>
+
+          {/* Scene Counter */}
+          <span className="text-sm text-slate-400 font-medium">
+            Scene {currentSceneIndex + 1} of {scenes.length}
+          </span>
+
+          <button
+            type="button"
+            onClick={handleNextScene}
+            disabled={currentSceneIndex === scenes.length - 1}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#3B82F6] text-white font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-blue-600 shadow-md shadow-blue-500/20"
+          >
+            Next
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }

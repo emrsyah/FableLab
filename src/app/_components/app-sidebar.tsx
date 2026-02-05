@@ -13,12 +13,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { DoubleLayerWrapper } from "@/components/ui/double-layer-wrapper";
+import { UserProfilePill } from "@/components/user-profile-pill";
+import { authClient } from "@/lib/auth/client";
 
 import logo from "~/images/logo/logo.png";
 
 export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const { data: session } = authClient.useSession();
 
   return (
     <aside
@@ -109,6 +112,16 @@ export function AppSidebar() {
               />
             </Link>
           </nav>
+
+          {/* Spacer to push profile to bottom */}
+          <div className="flex-grow" />
+
+          {/* User Profile at Bottom */}
+          {session?.user && (
+            <div className="px-0.5 pb-2">
+              <UserProfilePill user={session.user} isCollapsed={isCollapsed} />
+            </div>
+          )}
         </div>
       </DoubleLayerWrapper>
     </aside>

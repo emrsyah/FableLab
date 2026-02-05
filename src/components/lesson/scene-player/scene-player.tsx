@@ -18,6 +18,10 @@ export function ScenePlayer({
   onAutoAdvanceChange,
   onQuizComplete,
   onSceneComplete,
+  isNarratorActive,
+  isMusicActive,
+  onToggleNarrator,
+  onToggleMusic,
 }: ScenePlayerProps) {
   const { status, setReady, play, pause, handleAudioEnd, handleQuizCorrect } =
     useSceneState(scene, quiz);
@@ -28,10 +32,6 @@ export function ScenePlayer({
   /* Audio Source State */
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [musicSrc, setMusicSrc] = useState<string | null>(null);
-
-  /* Toggle State */
-  const [isNarratorActive, setIsNarratorActive] = useState(true);
-  const [isMusicActive, setIsMusicActive] = useState(true);
 
   /* Quiz Alert State */
   const [showQuizAlert, setShowQuizAlert] = useState(false);
@@ -230,12 +230,6 @@ export function ScenePlayer({
           scene={scene}
           currentSceneIndex={currentSceneIndex}
           totalScenes={totalScenes}
-          isNarratorActive={isNarratorActive}
-          isMusicActive={isMusicActive}
-          onNext={onNext}
-          onPrev={onPrev}
-          onToggleNarrator={() => setIsNarratorActive(!isNarratorActive)}
-          onToggleMusic={() => setIsMusicActive(!isMusicActive)}
         />
       )}
 

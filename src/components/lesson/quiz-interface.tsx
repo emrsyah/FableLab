@@ -68,10 +68,10 @@ export function QuizInterface({
       {/* Main Content Container - Centered */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-[1253px] mx-auto pt-[24px] h-full">
         {/* Header Section */}
-        <HangingBanner
+        {/* <HangingBanner
           text="Let's Check Your Understanding!"
           onAnimationComplete={() => setShowBorder(true)}
-        />
+        /> */}
 
         {/* Question Section - Blue Box Style */}
         <div

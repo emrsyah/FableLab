@@ -14,7 +14,7 @@ export default function MainLayout({
       <main className="flex-1 relative flex flex-col h-full overflow-hidden p-2 pl-0 md:pl-0">
         <DoubleLayerWrapper>
           <DottedBackground />
-          <AppHeader />
+          {/* <AppHeader /> */}
           <div className="relative z-10 flex-1 w-full h-full">{children}</div>
         </DoubleLayerWrapper>
       </main>

@@ -46,6 +46,12 @@ export interface ScenePlayerProps {
   autoAdvance: boolean;
   onAutoAdvanceChange: (value: boolean) => void;
 
+  // Audio Controls (lifted to parent)
+  isNarratorActive: boolean;
+  isMusicActive: boolean;
+  onToggleNarrator: () => void;
+  onToggleMusic: () => void;
+
   // Callbacks
   onQuizComplete: (correct: boolean) => void;
   onSceneComplete: () => void;

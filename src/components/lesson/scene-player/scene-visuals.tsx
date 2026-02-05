@@ -148,17 +148,10 @@ export function SceneVisuals({
         onAnimationComplete={() => setShowBorder(true)}
       /> */}
 
-      {/* Top Right Floating Badge: Scene Counter */}
-      <div className="absolute top-0 right-0 -mt-6 z-30 transform translate-y-[-50%]">
-        <div className="bg-white text-[#3e7dea] pl-4 pr-3 py-3 rounded-full font-medium text-sm">
-          Scene {currentSceneIndex + 1} of {totalScenes}
-        </div>
-      </div>
-
       {/* Main Image Container */}
       <div
         className={cn(
-          "relative w-full aspect-video mt-16 rounded-3xl overflow-hidden shadow-sm border-[14px] bg-blue-50/50 z-40 transition-colors duration-700 ease-in",
+          "relative w-full aspect-video mt-6 rounded-3xl overflow-hidden shadow-sm border-[14px] bg-blue-50/50 z-40 transition-colors duration-700 ease-in",
           showBorder ? "border-[#dbeafe]" : "border-transparent",
         )}
       >
