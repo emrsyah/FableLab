@@ -3,14 +3,20 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function TestAudioPage() {
   const [loading, setLoading] = useState(false);
-  const [text, setText] = useState("Welcome to the Fable Lab! Let's explore the wonders of science together.");
-  const [result, setResult] = useState<{ success: boolean; audioUrl?: string; error?: string } | null>(null);
+  const [text, setText] = useState(
+    "Welcome to the Fable Lab! Let's explore the wonders of science together.",
+  );
+  const [result, setResult] = useState<{
+    success: boolean;
+    audioUrl?: string;
+    error?: string;
+  } | null>(null);
 
   async function handleGenerate() {
     setLoading(true);
@@ -46,16 +52,20 @@ export default function TestAudioPage() {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="text">Text to Speak</Label>
-            <Textarea 
-              id="text" 
+            <Textarea
+              id="text"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              rows={4} 
+              rows={4}
               placeholder="Enter text here..."
             />
           </div>
 
-          <Button onClick={handleGenerate} disabled={loading || !text} className="w-full">
+          <Button
+            onClick={handleGenerate}
+            disabled={loading || !text}
+            className="w-full"
+          >
             {loading ? "Generating Audio..." : "Generate Audio"}
           </Button>
 
@@ -63,9 +73,18 @@ export default function TestAudioPage() {
             <div className="mt-6 space-y-4">
               {result.success && result.audioUrl ? (
                 <div className="p-4 rounded-md border bg-muted space-y-3">
-                  <h3 className="font-semibold text-green-600">Audio Generated!</h3>
-                  <audio controls src={result.audioUrl} className="w-full" autoPlay />
-                  <p className="text-xs text-muted-foreground break-all">{result.audioUrl}</p>
+                  <h3 className="font-semibold text-green-600">
+                    Audio Generated!
+                  </h3>
+                  <audio
+                    controls
+                    src={result.audioUrl}
+                    className="w-full"
+                    autoPlay
+                  />
+                  <p className="text-xs text-muted-foreground break-all">
+                    {result.audioUrl}
+                  </p>
                 </div>
               ) : (
                 <div className="p-4 rounded-md bg-red-50 text-red-900 border border-red-200">

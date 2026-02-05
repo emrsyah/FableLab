@@ -1,8 +1,8 @@
 import { router } from "@/lib/server/trpc";
-import { usersRouter } from "./users";
-import { scenesRouter } from "./scenes";
-import { quizzesRouter } from "./quizzes";
 import { lessonsRouter } from "./lessons";
+import { quizzesRouter } from "./quizzes";
+import { scenesRouter } from "./scenes";
+import { usersRouter } from "./users";
 
 export const appRouter = router({
   users: usersRouter,

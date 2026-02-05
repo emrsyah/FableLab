@@ -9,14 +9,23 @@ export const lessons = pgTable("lessons", {
   complexity: text("complexity").notNull(), // Elementary, Middle, High
   title: text("title").notNull(),
   slug: text("slug").unique(),
-  
+
+  // Generation status
+  status: text("status", {
+    enum: ["generating", "completed", "error"],
+  })
+    .default("completed")
+    .notNull(),
+
   // Metadata
   views: integer("views").default(0),
   completions: integer("completions").default(0),
-  
+
   // Author
   userId: text("user_id"),
 
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });

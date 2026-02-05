@@ -1,5 +1,4 @@
-import React from "react";
-import { User, ChevronRight } from "lucide-react";
+import { ChevronRight, User } from "lucide-react";
 
 interface UserProfilePillProps {
   user: {
@@ -20,10 +19,10 @@ export function UserProfilePill({ user }: UserProfilePillProps) {
         />
       ) : (
         <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
-           <User size={18} />
+          <User size={18} />
         </div>
       )}
-      
+
       <div className="text-left hidden sm:block min-w-0 max-w-[120px]">
         <div className="text-sm font-bold text-slate-700 leading-tight truncate">
           {user.name || "User"}
@@ -32,7 +31,7 @@ export function UserProfilePill({ user }: UserProfilePillProps) {
           {user.email}
         </div>
       </div>
-      
+
       <div className="text-slate-400 ml-1 group-hover:text-slate-600 transition-colors">
         <ChevronRight size={16} className="rotate-90" />
       </div>

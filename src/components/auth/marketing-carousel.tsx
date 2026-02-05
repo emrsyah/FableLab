@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { cn } from "@/lib/utils"
+import { useCallback, useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface MarketingCarouselProps {
   images: {
-    src: string
-    alt: string
-  }[]
-  autoPlayInterval?: number
-  className?: string
+    src: string;
+    alt: string;
+  }[];
+  autoPlayInterval?: number;
+  className?: string;
 }
 
 /**
@@ -21,40 +21,40 @@ export function MarketingCarousel({
   autoPlayInterval = 5000,
   className,
 }: MarketingCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % images.length)
-  }, [images.length])
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
 
   // Auto-play
   useEffect(() => {
-    if (images.length <= 1) return
+    if (images.length <= 1) return;
 
-    const interval = setInterval(goToNext, autoPlayInterval)
-    return () => clearInterval(interval)
-  }, [images.length, autoPlayInterval, goToNext])
+    const interval = setInterval(goToNext, autoPlayInterval);
+    return () => clearInterval(interval);
+  }, [images.length, autoPlayInterval, goToNext]);
 
   return (
     <div
       className={cn(
         "relative flex h-full w-full flex-col overflow-hidden text-white",
-        className
+        className,
       )}
     >
       {/* Dot Navigation - Absolute Top, Full Width */}
       {images.length > 1 && (
         <div className="absolute top-6 left-0 right-0 z-10 flex w-full gap-2 px-6">
-          {images.map((_, index) => (
+          {images.map((img, index) => (
             <button
-              key={`dot-${index}`}
+              key={`${img.src}-${index}`}
               type="button"
               onClick={() => setCurrentIndex(index)}
               className={cn(
                 "h-1.5 flex-1 rounded-full transition-all duration-300 shadow-sm backdrop-blur-sm",
                 index === currentIndex
                   ? "bg-white"
-                  : "bg-white/40 hover:bg-white/60"
+                  : "bg-white/40 hover:bg-white/60",
               )}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -70,7 +70,7 @@ export function MarketingCarousel({
         >
           {images.map((image, index) => (
             <div
-              key={image.src}
+              key={`${image.src}-${index}`}
               className="h-full w-full shrink-0"
             >
               <img
@@ -84,5 +84,5 @@ export function MarketingCarousel({
         </div>
       </div>
     </div>
-  )
+  );
 }

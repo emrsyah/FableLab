@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { cn } from "@/lib/utils"
+import type * as React from "react";
+import { cn } from "@/lib/utils";
 
-type SocialProvider = "google" | "microsoft"
+type SocialProvider = "google" | "microsoft";
 
 interface SocialButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  provider: SocialProvider
-  loading?: boolean
+  provider: SocialProvider;
+  loading?: boolean;
 }
 
 const providerConfig = {
@@ -46,7 +46,7 @@ const providerConfig = {
       </svg>
     ),
   },
-}
+};
 
 /**
  * Social login button for Google and Microsoft OAuth.
@@ -59,7 +59,7 @@ export function SocialButton({
   disabled,
   ...props
 }: SocialButtonProps) {
-  const config = providerConfig[provider]
+  const config = providerConfig[provider];
 
   return (
     <button
@@ -69,7 +69,7 @@ export function SocialButton({
         "flex h-12 w-full items-center justify-center gap-3 rounded-full border border-gray-200 bg-white text-sm font-medium text-gray-700 transition-colors",
         "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        className
+        className,
       )}
       {...props}
     >
@@ -80,5 +80,5 @@ export function SocialButton({
       )}
       <span>{config.label}</span>
     </button>
-  )
+  );
 }

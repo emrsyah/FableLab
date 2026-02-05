@@ -6,7 +6,15 @@ const APP_NAME = "fable_agent";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, sessionId, prompt, targetAge } = body;
+    const { userId, sessionId, prompt, targetAge, sceneCount } = body;
+
+    // Map frontend values to backend expected format
+    const educationLevel =
+      targetAge === "elementary"
+        ? "elementary_school"
+        : targetAge === "middle"
+          ? "middle_school"
+          : "high_school";
 
     // First, try to create the session
     try {
@@ -23,6 +31,9 @@ export async function POST(request: NextRequest) {
       console.log("Session creation attempt:", error);
     }
 
+    // Format the prompt with education level and scene count
+    const formattedPrompt = `Education: ${educationLevel}, Length: ${sceneCount}, Topic: ${prompt}`;
+
     // Now call /run_sse
     const response = await fetch(`${ADK_API_URL}/run_sse`, {
       method: "POST",
@@ -33,7 +44,7 @@ export async function POST(request: NextRequest) {
         sessionId: sessionId,
         newMessage: {
           role: "user",
-          parts: [{ text: `[Target Age: ${targetAge}] ${prompt}` }],
+          parts: [{ text: formattedPrompt }],
         },
       }),
     });

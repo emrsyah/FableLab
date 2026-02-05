@@ -1,8 +1,8 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface AuthDividerProps {
-  text?: string
-  className?: string
+  text?: string;
+  className?: string;
 }
 
 /**
@@ -15,5 +15,5 @@ export function AuthDivider({ text = "or", className }: AuthDividerProps) {
       <span className="px-4 text-sm text-gray-500">{text}</span>
       <div className="flex-1 border-t border-gray-200" />
     </div>
-  )
+  );
 }

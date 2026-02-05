@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface PasswordInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
-  error?: boolean
+  error?: boolean;
 }
 
 /**
@@ -18,7 +18,7 @@ export function PasswordInput({
   error,
   ...props
 }: PasswordInputProps) {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="relative">
@@ -31,7 +31,7 @@ export function PasswordInput({
           error
             ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
             : "border-gray-200",
-          className
+          className,
         )}
         {...props}
       />
@@ -49,5 +49,5 @@ export function PasswordInput({
         )}
       </button>
     </div>
-  )
+  );
 }

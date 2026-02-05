@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { TRPCProvider } from "@/lib/trpc/client";
 import { AgentationWrapper } from "@/components/agentation-wrapper";
+import { TRPCProvider } from "@/lib/trpc/client";
 
 export const metadata: Metadata = {
   title: "FableLab AI",
@@ -22,10 +22,7 @@ export default function RootLayout({
             rel="stylesheet"
           />
         </head>
-        <body
-          suppressHydrationWarning
-          className="antialiased font-sans"
-        >
+        <body suppressHydrationWarning className="antialiased font-sans">
           {children}
           <AgentationWrapper />
         </body>

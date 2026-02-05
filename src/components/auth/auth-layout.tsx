@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { cn } from "@/lib/utils"
+import type * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface AuthLayoutProps {
-  children: React.ReactNode
-  marketingContent?: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  marketingContent?: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -23,7 +23,7 @@ export function AuthLayout({
     <div
       className={cn(
         "flex h-screen w-full overflow-hidden bg-[#EDF3FD]",
-        className
+        className,
       )}
     >
       {/* Left Panel - Form */}
@@ -49,14 +49,14 @@ export function AuthLayout({
                     <path d="M12 21V9" />
                   </svg>
                 </div>
-                <span className="text-lg font-semibold text-gray-900">FableLab AI</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  FableLab AI
+                </span>
               </div>
             </div>
             {/* Form content - centered */}
             <div className="my-auto">
-              <div className="mx-auto w-full max-w-xl">
-                {children}
-              </div>
+              <div className="mx-auto w-full max-w-xl">{children}</div>
             </div>
             {/* Bottom spacer for balance */}
             <div className="mt-auto" />
@@ -71,5 +71,5 @@ export function AuthLayout({
         </div>
       </div>
     </div>
-  )
+  );
 }

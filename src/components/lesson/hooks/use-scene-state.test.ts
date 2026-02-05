@@ -1,6 +1,6 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
+import type { Quiz, Scene } from "../types/scene.types";
 import { useSceneState } from "./use-scene-state";
-import { type Scene, type Quiz } from "../types/scene.types";
 
 const mockScene: Scene = {
   id: "scene1",
@@ -46,7 +46,7 @@ describe("useSceneState", () => {
     });
     expect(result.current.status).toBe("ready");
   });
-  
+
   it("should transition from ready to playing", () => {
     const { result } = renderHook(() => useSceneState(mockScene, null));
     act(() => result.current.setReady());
@@ -69,9 +69,11 @@ describe("useSceneState", () => {
     act(() => result.current.handleAudioEnd());
     expect(result.current.status).toBe("completed");
   });
-  
+
   it("should transition from playing to quiz_gate if there is a quiz", () => {
-    const { result } = renderHook(() => useSceneState(mockSceneWithQuiz, mockQuiz));
+    const { result } = renderHook(() =>
+      useSceneState(mockSceneWithQuiz, mockQuiz),
+    );
     act(() => result.current.setReady());
     act(() => result.current.play());
     act(() => result.current.handleAudioEnd());
@@ -79,14 +81,16 @@ describe("useSceneState", () => {
   });
 
   it("should transition from quiz_gate to completed when quiz is correct", () => {
-    const { result } = renderHook(() => useSceneState(mockSceneWithQuiz, mockQuiz));
+    const { result } = renderHook(() =>
+      useSceneState(mockSceneWithQuiz, mockQuiz),
+    );
     act(() => result.current.setReady());
     act(() => result.current.play());
     act(() => result.current.handleAudioEnd());
     act(() => result.current.handleQuizCorrect());
     expect(result.current.status).toBe("completed");
   });
-  
+
   it("should reset to initial status", () => {
     const { result } = renderHook(() => useSceneState(mockScene, null));
     act(() => result.current.setReady());

@@ -1,7 +1,7 @@
 "use client";
 
-import { useReducer, useCallback } from "react";
-import { type Scene, type Quiz } from "../types/scene.types";
+import { useCallback, useReducer } from "react";
+import type { Quiz, Scene } from "../types/scene.types";
 
 type SceneStatus =
   | "initial"
@@ -64,31 +64,43 @@ export function useSceneState(scene: Scene, quiz: Quiz | null | undefined) {
     status: "initial",
   };
 
-  const [state, dispatch] = useReducer(sceneStateReducer, initialState);
+  const [_state, _dispatch] = useReducer(sceneStateReducer, initialState);
 
   // A more complex reducer logic to handle quiz gate
   const complexReducer = (state: State, action: Action): State => {
-      switch (action.type) {
-          case "AUDIO_END":
-              if (scene.hasQuiz && quiz) {
-                  return { ...state, status: "quiz_gate" };
-              }
-              return { ...state, status: "completed" };
-          // All other actions are the same
-          default:
-              return sceneStateReducer(state, action);
-      }
+    switch (action.type) {
+      case "AUDIO_END":
+        if (scene.hasQuiz && quiz) {
+          return { ...state, status: "quiz_gate" };
+        }
+        return { ...state, status: "completed" };
+      // All other actions are the same
+      default:
+        return sceneStateReducer(state, action);
+    }
   };
 
-  const [stateWithQuiz, dispatchWithQuiz] = useReducer(complexReducer, initialState);
+  const [_stateWithQuiz, dispatchWithQuiz] = useReducer(
+    complexReducer,
+    initialState,
+  );
 
-  const setReady = useCallback(() => dispatchWithQuiz({ type: "SET_READY" }), []);
-  const play = useCallback(() => dispatchWithQuiz({ type: "PLAY" }), []);
-  const pause = useCallback(() => dispatchWithQuiz({ type: "PAUSE" }), []);
-  const handleAudioEnd = useCallback(() => dispatchWithQuiz({ type: "AUDIO_END" }), []);
-  const handleQuizCorrect = useCallback(() => dispatchWithQuiz({ type: "QUIZ_CORRECT" }), []);
-  const reset = useCallback(() => dispatchWithQuiz({ type: "RESET" }), []);
-  
+  const _setReady = useCallback(
+    () => dispatchWithQuiz({ type: "SET_READY" }),
+    [],
+  );
+  const _play = useCallback(() => dispatchWithQuiz({ type: "PLAY" }), []);
+  const _pause = useCallback(() => dispatchWithQuiz({ type: "PAUSE" }), []);
+  const _handleAudioEnd = useCallback(
+    () => dispatchWithQuiz({ type: "AUDIO_END" }),
+    [],
+  );
+  const _handleQuizCorrect = useCallback(
+    () => dispatchWithQuiz({ type: "QUIZ_CORRECT" }),
+    [],
+  );
+  const _reset = useCallback(() => dispatchWithQuiz({ type: "RESET" }), []);
+
   // The component seems to handle the quiz gate logic, so a simpler state is fine.
   // The component calls handleAudioEnd, and based on the status and hasQuiz prop, it does something.
   // When the audio ends, the status becomes 'paused'. If auto-advance is on and there is no quiz, it moves to the next scene.
@@ -111,7 +123,9 @@ export function useSceneState(scene: Scene, quiz: Quiz | null | undefined) {
       case "playing":
         if (action.type === "PAUSE") return { status: "paused" };
         if (action.type === "AUDIO_END") {
-          return scene.hasQuiz && quiz ? { status: "quiz_gate" } : { status: "completed" };
+          return scene.hasQuiz && quiz
+            ? { status: "quiz_gate" }
+            : { status: "completed" };
         }
         break;
       case "paused":
@@ -127,8 +141,9 @@ export function useSceneState(scene: Scene, quiz: Quiz | null | undefined) {
     return state;
   };
 
-  const [finalState, finalDispatch] = useReducer(finalReducer, { status: "loading" });
-
+  const [finalState, finalDispatch] = useReducer(finalReducer, {
+    status: "loading",
+  });
 
   return {
     status: finalState.status,
@@ -136,7 +151,10 @@ export function useSceneState(scene: Scene, quiz: Quiz | null | undefined) {
     play: useCallback(() => finalDispatch({ type: "PLAY" }), []),
     pause: useCallback(() => finalDispatch({ type: "PAUSE" }), []),
     handleAudioEnd: useCallback(() => finalDispatch({ type: "AUDIO_END" }), []),
-    handleQuizCorrect: useCallback(() => finalDispatch({ type: "QUIZ_CORRECT" }), []),
+    handleQuizCorrect: useCallback(
+      () => finalDispatch({ type: "QUIZ_CORRECT" }),
+      [],
+    ),
     reset: useCallback(() => finalDispatch({ type: "RESET" }), []),
   };
 }

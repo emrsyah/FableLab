@@ -1,7 +1,7 @@
 "use client";
 
+import { Music, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Mic, Music, Volume2, VolumeX } from "lucide-react";
 
 interface SceneNarrativeProps {
   text: string;
@@ -28,12 +28,13 @@ export function SceneNarrative({
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-6">
           {/* Narrator Toggle */}
           <button
+            type="button"
             onClick={onToggleNarrator}
             className={cn(
               "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border",
               isNarratorActive
                 ? "bg-[#3B82F6] text-white border-[#3B82F6] shadow-md shadow-blue-500/20"
-                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200"
+                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200",
             )}
           >
             {isNarratorActive ? <Volume2 size={18} /> : <VolumeX size={18} />}
@@ -42,12 +43,13 @@ export function SceneNarrative({
 
           {/* Music Toggle */}
           <button
+            type="button"
             onClick={onToggleMusic}
             className={cn(
               "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border",
               isMusicActive
                 ? "bg-[#3B82F6] text-white border-[#3B82F6] shadow-md shadow-blue-500/20"
-                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200"
+                : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200",
             )}
           >
             <Music size={18} />

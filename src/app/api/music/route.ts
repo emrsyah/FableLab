@@ -1,17 +1,22 @@
-
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
 
     if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 },
+      );
     }
 
     const apiKey = process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "ELEVENLABS_API_KEY is missing" }, { status: 500 });
+      return NextResponse.json(
+        { error: "ELEVENLABS_API_KEY is missing" },
+        { status: 500 },
+      );
     }
 
     // ElevenLabs Sound Generation Endpoint
@@ -33,7 +38,10 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("ElevenLabs Sound Gen Error:", errorText);
-      return NextResponse.json({ error: errorText }, { status: response.status });
+      return NextResponse.json(
+        { error: errorText },
+        { status: response.status },
+      );
     }
 
     // Stream the response body directly
@@ -42,7 +50,6 @@ export async function POST(req: NextRequest) {
         "Content-Type": "audio/mpeg",
       },
     });
-
   } catch (error: any) {
     console.error("Music API Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

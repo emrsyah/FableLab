@@ -1,36 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Loader2 } from "lucide-react"
-import { authClient } from "@/lib/auth/client"
-import { Button } from "@/components/ui/button"
-import { PasswordInput } from "./password-input"
-import { SocialButton } from "./social-button"
-import { AuthDivider } from "./auth-divider"
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth/client";
+import { AuthDivider } from "./auth-divider";
+import { PasswordInput } from "./password-input";
+import { SocialButton } from "./social-button";
 
 interface RegisterFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [socialLoading, setSocialLoading] = useState<"google" | "microsoft" | null>(null)
-  const [error, setError] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<
+    "google" | "microsoft" | null
+  >(null);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
 
     try {
@@ -38,42 +40,44 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         email,
         password,
         name,
-        callbackURL: "/home",
-      })
+        callbackURL: "/",
+      });
 
       if (error) {
-        setError(error.message || "Failed to create account")
+        setError(error.message || "Failed to create account");
       } else {
-        onSuccess?.()
+        onSuccess?.();
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(err)
+      setError("An unexpected error occurred. Please try again.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSocialLogin = async (provider: "google" | "microsoft") => {
-    setSocialLoading(provider)
-    setError("")
+    setSocialLoading(provider);
+    setError("");
 
     try {
       if (provider === "google") {
         await authClient.signIn.social({
           provider: "google",
-          callbackURL: "/home",
-        })
+          callbackURL: "/",
+        });
       } else {
-        setError("Microsoft login is not yet available")
-        setSocialLoading(null)
+        setError("Microsoft login is not yet available");
+        setSocialLoading(null);
       }
     } catch (err) {
-      setError(`${provider === "google" ? "Google" : "Microsoft"} sign in failed`)
-      console.error(err)
-      setSocialLoading(null)
+      setError(
+        `${provider === "google" ? "Google" : "Microsoft"} sign in failed`,
+      );
+      console.error(err);
+      setSocialLoading(null);
     }
-  }
+  };
 
   return (
     <div className="space-y-5">
@@ -120,7 +124,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
         {/* Password Field */}
         <div className="space-y-1.5">
-          <label htmlFor="password" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-gray-700"
+          >
             Password
           </label>
           <PasswordInput
@@ -135,7 +142,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
         {/* Confirm Password Field */}
         <div className="space-y-1.5">
-          <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="confirmPassword"
+            className="text-sm font-medium text-gray-700"
+          >
             Password Confirmation
           </label>
           <PasswordInput
@@ -212,5 +222,5 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </Link>
       </p>
     </div>
-  )
+  );
 }

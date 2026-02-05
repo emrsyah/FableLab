@@ -1,8 +1,8 @@
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { eq, asc } from "drizzle-orm";
-import { router, publicProcedure, protectedProcedure } from "@/lib/server/trpc";
 import { db } from "@/lib/db";
-import { scenes, quizzes } from "@/lib/db/schema/scenes";
+import { quizzes, scenes } from "@/lib/db/schema/scenes";
+import { protectedProcedure, publicProcedure, router } from "@/lib/server/trpc";
 
 export const scenesRouter = router({
   getByLessonId: publicProcedure

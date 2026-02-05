@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface IosLoaderProps {
   className?: string; // For sizing and positioning
-  color?: string;     // For bar color
+  color?: string; // For bar color
 }
 
 export function IosLoader({ className, color = "#326BFF" }: IosLoaderProps) {

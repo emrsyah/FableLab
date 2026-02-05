@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Loader2 } from "lucide-react"
-import { authClient } from "@/lib/auth/client"
-import { Button } from "@/components/ui/button"
-import { PasswordInput } from "./password-input"
-import { SocialButton } from "./social-button"
-import { AuthDivider } from "./auth-divider"
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth/client";
+import { AuthDivider } from "./auth-divider";
+import { PasswordInput } from "./password-input";
+import { SocialButton } from "./social-button";
 
 interface LoginFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 /**
@@ -18,58 +18,62 @@ interface LoginFormProps {
  * Follows the Figma design with pill-shaped submit button.
  */
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [socialLoading, setSocialLoading] = useState<"google" | "microsoft" | null>(null)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<
+    "google" | "microsoft" | null
+  >(null);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       const { error } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/home",
-      })
+        callbackURL: "/",
+      });
 
       if (error) {
-        setError(error.message || "Invalid email or password")
+        setError(error.message || "Invalid email or password");
       } else {
-        onSuccess?.()
+        onSuccess?.();
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(err)
+      setError("An unexpected error occurred. Please try again.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSocialLogin = async (provider: "google" | "microsoft") => {
-    setSocialLoading(provider)
-    setError("")
+    setSocialLoading(provider);
+    setError("");
 
     try {
       if (provider === "google") {
         await authClient.signIn.social({
           provider: "google",
-          callbackURL: "/home",
-        })
+          callbackURL: "/",
+        });
       } else {
         // Microsoft OAuth - would need to be configured in Better Auth
-        setError("Microsoft login is not yet available")
-        setSocialLoading(null)
+        setError("Microsoft login is not yet available");
+        setSocialLoading(null);
       }
     } catch (err) {
-      setError(`${provider === "google" ? "Google" : "Microsoft"} sign in failed`)
-      console.error(err)
-      setSocialLoading(null)
+      setError(
+        `${provider === "google" ? "Google" : "Microsoft"} sign in failed`,
+      );
+      console.error(err);
+      setSocialLoading(null);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -84,10 +88,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email Field */}
         <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="email" className="text-sm font-medium text-gray-700">
             Email
           </label>
           <input
@@ -180,5 +181,5 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         </Link>
       </p>
     </div>
-  )
+  );
 }

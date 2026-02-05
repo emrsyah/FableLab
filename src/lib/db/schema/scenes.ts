@@ -26,7 +26,9 @@ export const scenes = pgTable("scenes", {
   // Visual
   visualType: text("visual_type", {
     enum: ["image", "geogebra", "video"],
-  }).default("image").notNull(),
+  })
+    .default("image")
+    .notNull(),
   imageUrl: text("image_url"),
   geogebraConfig: text("geogebra_config"), // XML or commands
 

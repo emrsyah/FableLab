@@ -1,10 +1,9 @@
 import { subscribe } from "@fal-ai/serverless-client";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { lessons } from "@/lib/db/schema/lessons";
-import { scenes } from "@/lib/db/schema/scenes";
-import { quizzes } from "@/lib/db/schema/scenes";
+import { quizzes, scenes } from "@/lib/db/schema/scenes";
 import { generateScene } from "./gemini/scene-generator";
-import { eq } from "drizzle-orm";
 
 type LessonGeneratorParams = {
   topic: string;
@@ -18,7 +17,7 @@ const SCENE_TYPES = ["Introduction", "Foundation", "Checkpoint"];
 export async function generateImageForScene(
   sceneContent: { title: string; storyText: string },
   sceneNumber: number,
-  complexity: string
+  complexity: string,
 ): Promise<string> {
   const apiKey = process.env.FAL_KEY;
 
@@ -29,7 +28,7 @@ export async function generateImageForScene(
 
   try {
     const prompt = `A digital illustration for a STEM lesson titled "${sceneContent.title}". The scene should visualize: "${sceneContent.storyText}". The style should be vibrant and engaging for a ${complexity} level audience.`;
-    
+
     // Using fal-ai/flux/schnell for fast generation
     const result: any = await subscribe("fal-ai/flux/schnell", {
       input: {
@@ -37,7 +36,7 @@ export async function generateImageForScene(
         image_size: "landscape_16_9",
         num_inference_steps: 4,
         seed: Math.floor(Math.random() * 1000000),
-        enable_safety_checker: true
+        enable_safety_checker: true,
       },
       logs: true,
       onQueueUpdate: (update) => {
@@ -53,13 +52,15 @@ export async function generateImageForScene(
 
     throw new Error("No image URL returned from Fal.ai");
   } catch (error: any) {
-    console.error(`Error generating image with Fal.ai for scene ${sceneNumber}:`, error);
+    console.error(
+      `Error generating image with Fal.ai for scene ${sceneNumber}:`,
+      error,
+    );
     return `https://placehold.co/1920x1080/DD2C00/FFFFFF/png?text=Image+Gen+Failed+(${sceneNumber})`;
   }
 }
 
 export async function generateLesson(params: LessonGeneratorParams) {
-
   const returnedLessons = await db
     .insert(lessons)
     .values({
@@ -76,7 +77,6 @@ export async function generateLesson(params: LessonGeneratorParams) {
   }
   const lesson = returnedLessons[0];
 
-
   let previousScenesSummary = "";
   const generatedScenes = [];
 
@@ -86,8 +86,6 @@ export async function generateLesson(params: LessonGeneratorParams) {
     const sceneType = SCENE_TYPES[i];
     const hasQuiz = sceneNumber === 3 || sceneNumber === 6;
 
-
-
     const generatedContent = await generateScene({
       sceneNumber,
       complexity: params.complexity,
@@ -96,11 +94,10 @@ export async function generateLesson(params: LessonGeneratorParams) {
       previousScenesSummary,
     });
 
-
     const imageUrl = await generateImageForScene(
       generatedContent,
       sceneNumber,
-      params.complexity
+      params.complexity,
     );
 
     // 3. Save the scene to the database
@@ -122,18 +119,16 @@ export async function generateLesson(params: LessonGeneratorParams) {
 
     if (!returnedScenes || returnedScenes.length === 0) {
       console.error(
-        `Database did not return a scene after insert for scene number ${sceneNumber}.`
+        `Database did not return a scene after insert for scene number ${sceneNumber}.`,
       );
       throw new Error(
-        `Failed to create scene number ${sceneNumber} in the database.`
+        `Failed to create scene number ${sceneNumber} in the database.`,
       );
     }
     const scene = returnedScenes[0];
 
-
     // 4. If the scene has a quiz, save it
     if (hasQuiz && generatedContent.quiz) {
-
       const returnedQuizzes = await db
         .insert(quizzes)
         .values({
@@ -147,13 +142,12 @@ export async function generateLesson(params: LessonGeneratorParams) {
 
       if (!returnedQuizzes || returnedQuizzes.length === 0) {
         console.error(
-          `Database did not return a quiz after insert for scene number ${sceneNumber}.`
+          `Database did not return a quiz after insert for scene number ${sceneNumber}.`,
         );
         throw new Error(
-          `Failed to create quiz for scene number ${sceneNumber} in the database.`
+          `Failed to create quiz for scene number ${sceneNumber} in the database.`,
         );
       }
-
     }
 
     previousScenesSummary += `Scene ${sceneNumber}: ${generatedContent.storyText}\n`;
@@ -162,14 +156,11 @@ export async function generateLesson(params: LessonGeneratorParams) {
 
   // 5. Update lesson title
   if (generatedScenes.length > 0) {
-
     await db
       .update(lessons)
       .set({ title: generatedScenes[0].title })
       .where(eq(lessons.id, lesson.id));
-
   }
-
 
   return lesson;
 }

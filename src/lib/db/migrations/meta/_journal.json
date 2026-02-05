@@ -29,6 +29,13 @@
       "when": 1769648768699,
       "tag": "0003_violet_hellcat",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770220791815,
+      "tag": "0004_add-lesson-status",
+      "breakpoints": true
     }
   ]
 }

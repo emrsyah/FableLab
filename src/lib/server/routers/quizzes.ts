@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { router, publicProcedure, protectedProcedure } from "@/lib/server/trpc";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema/scenes";
-import { TRPCError } from "@trpc/server";
+import { protectedProcedure, publicProcedure, router } from "@/lib/server/trpc";
 
 export const quizzesRouter = router({
   submit: publicProcedure

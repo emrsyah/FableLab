@@ -1,9 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SceneVisuals } from "./scene-visuals";
+import type { Scene } from "../types/scene.types";
 import { SceneNarrative } from "./scene-narrative";
-import { Scene } from "../types/scene.types";
+import { SceneVisuals } from "./scene-visuals";
 
 interface SceneStandardViewProps {
   scene: Scene;
@@ -51,6 +51,7 @@ export function SceneStandardView({
       {/* 3. Bottom Navigation */}
       <div className="flex items-center justify-between mt-8 px-4">
         <button
+          type="button"
           onClick={onPrev}
           disabled={currentSceneIndex === 0}
           className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -60,6 +61,7 @@ export function SceneStandardView({
         </button>
 
         <button
+          type="button"
           onClick={onNext}
           disabled={currentSceneIndex === totalScenes - 1}
           className="flex items-center gap-2 text-[#3B82F6] hover:text-blue-600 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"

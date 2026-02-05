@@ -1,17 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { testGenerateImage } from "./actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { testGenerateImage } from "./actions";
 
 export default function TestImagePage() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; imageUrl?: string; error?: string } | null>(null);
+  const [result, setResult] = useState<{
+    success: boolean;
+    imageUrl?: string;
+    error?: string;
+  } | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -19,7 +29,7 @@ export default function TestImagePage() {
     try {
       const res = await testGenerateImage(formData);
       setResult(res);
-    } catch (e) {
+    } catch (_e) {
       setResult({ success: false, error: "Failed to invoke action" });
     } finally {
       setLoading(false);
@@ -36,9 +46,14 @@ export default function TestImagePage() {
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Scene Title</Label>
-              <Input id="title" name="title" defaultValue="The Mystery of Gravity" required />
+              <Input
+                id="title"
+                name="title"
+                defaultValue="The Mystery of Gravity"
+                required
+              />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="complexity">Complexity</Label>
               <Select name="complexity" defaultValue="Middle">
@@ -55,12 +70,12 @@ export default function TestImagePage() {
 
             <div className="space-y-2">
               <Label htmlFor="storyText">Story Text</Label>
-              <Textarea 
-                id="storyText" 
-                name="storyText" 
-                rows={4} 
-                defaultValue="Imagine you are holding a heavy bowling ball and a light feather. If you drop them both at the same time on the moon, which one lands first?" 
-                required 
+              <Textarea
+                id="storyText"
+                name="storyText"
+                rows={4}
+                defaultValue="Imagine you are holding a heavy bowling ball and a light feather. If you drop them both at the same time on the moon, which one lands first?"
+                required
               />
             </div>
 
@@ -76,9 +91,15 @@ export default function TestImagePage() {
                   <h3 className="font-semibold text-green-600">Success!</h3>
                   <div className="relative aspect-video w-full overflow-hidden rounded-md border bg-muted">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={result.imageUrl} alt="Generated" className="object-cover w-full h-full" />
+                    <img
+                      src={result.imageUrl}
+                      alt="Generated"
+                      className="object-cover w-full h-full"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground break-all">{result.imageUrl}</p>
+                  <p className="text-xs text-muted-foreground break-all">
+                    {result.imageUrl}
+                  </p>
                 </div>
               ) : (
                 <div className="p-4 rounded-md bg-red-50 text-red-900 border border-red-200">

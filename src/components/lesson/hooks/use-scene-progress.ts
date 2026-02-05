@@ -11,14 +11,14 @@ export function useSceneProgress(lessonId: string) {
         try {
           localStorage.setItem(
             getStorageKey(lessonId),
-            JSON.stringify({ currentSceneIndex, timestamp: Date.now() })
+            JSON.stringify({ currentSceneIndex, timestamp: Date.now() }),
           );
         } catch (error) {
           console.error("Failed to save progress to localStorage:", error);
         }
       }
     },
-    [lessonId]
+    [lessonId],
   );
 
   const getProgress = useCallback(() => {

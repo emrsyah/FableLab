@@ -1,9 +1,9 @@
 import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/neon-http";
-import { postsTable, usersTable } from "./schema/users";
 import { lessons } from "./schema/lessons";
-import { scenes, quizzes } from "./schema/scenes";
+import { quizzes, scenes } from "./schema/scenes";
+import { postsTable, usersTable } from "./schema/users";
 
 config({ path: ".env.local" }); // or .env.local
 
