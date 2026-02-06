@@ -2,7 +2,6 @@
 
 import { Check } from "lucide-react";
 import { useState } from "react";
-import { HangingBanner } from "@/components/ui/hanging-banner";
 import { cn } from "@/lib/utils";
 import type { Quiz } from "./types/scene.types";
 
@@ -46,7 +45,7 @@ export function QuizInterface({
 }: QuizInterfaceProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showBorder, setShowBorder] = useState(false);
+  const [showBorder, _setShowBorder] = useState(false);
 
   const handleSubmit = () => {
     if (selectedOption === null) return;

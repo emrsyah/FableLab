@@ -5,7 +5,7 @@ import {
   ChevronRight,
   History,
   Home,
-  PieChart,
+  LibraryBig,
   Search,
 } from "lucide-react";
 import Image from "next/image";
@@ -95,11 +95,11 @@ export function AppSidebar() {
                 isCollapsed={isCollapsed}
               />
             </Link>
-            <Link href="/progress" className="w-full">
+            <Link href="/library" className="w-full">
               <SidebarItem
-                icon={<PieChart size={20} />}
-                label="Progress Tracking"
-                isActive={pathname === "/progress"}
+                icon={<LibraryBig size={20} />}
+                label="Community Library"
+                isActive={pathname === "/library"}
                 isCollapsed={isCollapsed}
               />
             </Link>
@@ -118,7 +118,7 @@ export function AppSidebar() {
 
           {/* User Profile at Bottom */}
           {session?.user && (
-            <div className="px-0.5 pb-2">
+            <div className="px-0.5">
               <UserProfilePill user={session.user} isCollapsed={isCollapsed} />
             </div>
           )}

@@ -15,15 +15,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { buttonHoverVariants } from "./home-view.animations";
 
+export type LearningLevel = "elementary" | "middle" | "high";
+export type SceneCount = "short" | "medium" | "long";
+
 interface ChatInputProps {
   prompt: string;
   setPrompt: (value: string) => void;
   files: File[];
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeFile: (index: number) => void;
-  handleSend: () => void;
+  handleSend: (learningLevel: LearningLevel, sceneCount: SceneCount) => void;
   isLoading?: boolean;
   fileInputRef: RefObject<HTMLInputElement | null>;
+  learningLevel: LearningLevel;
+  setLearningLevel: (value: LearningLevel) => void;
+  sceneCount: SceneCount;
+  setSceneCount: (value: SceneCount) => void;
 }
 
 export function ChatInput({
@@ -35,7 +42,15 @@ export function ChatInput({
   handleSend,
   isLoading = false,
   fileInputRef,
+  learningLevel,
+  setLearningLevel,
+  sceneCount,
+  setSceneCount,
 }: ChatInputProps) {
+  const onSend = () => {
+    handleSend(learningLevel, sceneCount);
+  };
+
   return (
     <>
       <div className="relative flex items-end gap-2">
@@ -45,7 +60,7 @@ export function ChatInput({
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !isLoading) {
               e.preventDefault();
-              handleSend();
+              onSend();
             }
           }}
           placeholder="Explain how gravity affects falling objects..."
@@ -119,27 +134,31 @@ export function ChatInput({
             </Button>
           </motion.div>
 
-          <Select>
+          <Select
+            value={learningLevel}
+            onValueChange={(value) => setLearningLevel(value as LearningLevel)}
+          >
             <SelectTrigger className="w-[180px] h-9 rounded-full border-slate-200 text-slate-600 text-xs font-medium bg-slate-50/50 hover:bg-white transition-colors">
               <SelectValue placeholder="Choose Learning Level" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="beginner">Beginner (Ages 5-8)</SelectItem>
-              <SelectItem value="intermediate">
-                Intermediate (Ages 9-12)
-              </SelectItem>
-              <SelectItem value="advanced">Advanced (Ages 13+)</SelectItem>
+              <SelectItem value="elementary">Elementary School</SelectItem>
+              <SelectItem value="middle">Middle School</SelectItem>
+              <SelectItem value="high">High School</SelectItem>
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={sceneCount}
+            onValueChange={(value) => setSceneCount(value as SceneCount)}
+          >
             <SelectTrigger className="w-[180px] h-9 rounded-full border-slate-200 text-slate-600 text-xs font-medium bg-slate-50/50 hover:bg-white transition-colors">
               <SelectValue placeholder="Number of Scenes" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="3">3 Scenes</SelectItem>
-              <SelectItem value="5">5 Scenes</SelectItem>
-              <SelectItem value="7">7 Scenes</SelectItem>
+              <SelectItem value="short">Short (3-5 Scenes)</SelectItem>
+              <SelectItem value="medium">Medium (6-9 Scenes)</SelectItem>
+              <SelectItem value="long">Long (10-12 Scenes)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -152,7 +171,7 @@ export function ChatInput({
           <Button
             className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 px-6 h-10 gap-2 font-medium transition-all disabled:opacity-70"
             disabled={isLoading || (!prompt.trim() && files.length === 0)}
-            onClick={handleSend}
+            onClick={onSend}
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />

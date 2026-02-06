@@ -53,9 +53,19 @@ export const lessonsRouter = router({
     }),
 
   getMyLessons: protectedProcedure.query(async ({ ctx }) => {
-    // Using ctx.db as it is standard in tRPC context
+    // Only show completed lessons in history
     const userLessons = await ctx.db.query.lessons.findMany({
-      where: (lessons, { eq }) => eq(lessons.userId, ctx.session.user.id),
+      where: (lessons, { and, eq }) =>
+        and(
+          eq(lessons.userId, ctx.session.user.id),
+          eq(lessons.status, "completed"),
+        ),
+      with: {
+        scenes: {
+          limit: 1,
+          orderBy: (scenes, { asc }) => [asc(scenes.sceneNumber)],
+        },
+      },
       orderBy: (lessons, { desc }) => [desc(lessons.createdAt)],
     });
 

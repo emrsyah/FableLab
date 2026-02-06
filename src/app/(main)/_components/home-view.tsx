@@ -1,6 +1,5 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import { useRef } from "react";
 import { Persona } from "@/components/ai-elements/persona";
@@ -23,6 +22,10 @@ export function HomeView() {
     handleFileSelect,
     removeFile,
     handleSend,
+    learningLevel,
+    setLearningLevel,
+    sceneCount,
+    setSceneCount,
   } = useChat({
     onClearInput: () => {
       if (fileInputRefReal.current) {
@@ -75,6 +78,10 @@ export function HomeView() {
               handleSend={handleSend}
               isLoading={isLoading}
               fileInputRef={fileInputRefReal}
+              learningLevel={learningLevel}
+              setLearningLevel={setLearningLevel}
+              sceneCount={sceneCount}
+              setSceneCount={setSceneCount}
             />
           </motion.div>
         </div>

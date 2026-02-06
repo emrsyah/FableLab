@@ -12,11 +12,14 @@ import {
   VolumeX,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { GenerationOverlay } from "@/components/lesson/generation-overlay";
 import { useSceneProgress } from "@/components/lesson/hooks/use-scene-progress";
 import { ScenePlayer } from "@/components/lesson/scene-player/scene-player";
-import { authClient } from "@/lib/auth/client";
+import {
+  SlimAudioPlayer,
+  type SlimAudioPlayerRef,
+} from "@/components/lesson/slim-audio-player";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +28,6 @@ type LessonClientPageProps = {
 };
 
 export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
-  const { data: session } = authClient.useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -38,6 +40,10 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   // Audio control state (lifted from ScenePlayer for header access)
   const [isNarratorActive, setIsNarratorActive] = useState(true);
   const [isMusicActive, setIsMusicActive] = useState(true);
+
+  // Audio source state (lifted from ScenePlayer for footer player)
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const audioPlayerRef = useRef<SlimAudioPlayerRef>(null);
 
   // Get generation params from URL (passed when redirecting from create page)
   const targetAge = searchParams.get("targetAge") || "middle";
@@ -80,6 +86,51 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
     saveProgress(currentSceneIndex);
   }, [currentSceneIndex, saveProgress]);
 
+  // Fetch audio when scene changes
+  useEffect(() => {
+    if (!scenes || !scenes[currentSceneIndex]) return;
+
+    const scene = scenes[currentSceneIndex];
+
+    // Reset audio player
+    audioPlayerRef.current?.reset();
+    setAudioSrc(null);
+
+    const fetchAudio = async () => {
+      // Use pre-generated narration URL if available
+      if (scene.narrationUrl) {
+        setAudioSrc(scene.narrationUrl);
+        return;
+      }
+
+      // Fallback: Generate audio on-demand via TTS API
+      if (scene.storyText) {
+        try {
+          const res = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: scene.storyText }),
+          });
+          if (res.ok) {
+            const blob = await res.blob();
+            setAudioSrc(URL.createObjectURL(blob));
+          }
+        } catch (err) {
+          console.error("Error fetching audio stream", err);
+        }
+      }
+    };
+
+    fetchAudio();
+
+    return () => {
+      // Cleanup blob URLs
+      if (audioSrc?.startsWith("blob:")) {
+        URL.revokeObjectURL(audioSrc);
+      }
+    };
+  }, [scenes, currentSceneIndex, audioSrc]);
+
   const handleGenerationComplete = useCallback(() => {
     // Refetch lesson and scenes when generation completes
     void refetchLesson();
@@ -111,6 +162,21 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
       `Quiz in scene ${currentSceneIndex + 1} completed. Correct: ${isCorrect}`,
     );
   };
+
+  const handleAudioEnded = useCallback(() => {
+    if (autoAdvance && scenes && currentSceneIndex < scenes.length - 1) {
+      setTimeout(() => {
+        handleNextScene();
+      }, 500);
+    }
+  }, [autoAdvance, scenes, currentSceneIndex, handleNextScene]);
+
+  const handleAudioReady = useCallback(() => {
+    // Auto-play when ready and narrator is active
+    if (isNarratorActive) {
+      audioPlayerRef.current?.play();
+    }
+  }, [isNarratorActive]);
 
   // Show generation overlay if lesson is in generating state
   if (lesson?.status === "generating") {
@@ -149,10 +215,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   if (isLessonLoading || isScenesLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-white/50 backdrop-blur-sm rounded-2xl">
-        <Loader2 className="animate-spin size-12 mb-4 text-blue-500" />
-        <p className="text-lg font-medium text-slate-700">
-          Loading your lesson...
-        </p>
+        <Loader2 className="animate-spin size-16 mb-4 text-blue-500" />
       </div>
     );
   }
@@ -189,11 +252,6 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
             {currentScene.hasQuiz ? "Quiz" : "Lesson"}:{" "}
             {currentScene.title || "Untitled"}
           </h1>
-          <p className="text-slate-500 text-sm mt-1 max-w-2xl truncate">
-            {currentScene.storyText
-              ? `${currentScene.storyText.substring(0, 100)}...`
-              : "Explore this interactive lesson."}
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -209,7 +267,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
             )}
           >
             {isNarratorActive ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{isNarratorActive ? "Narrator On" : "Narrator Off"}</span>
+            Narrator
           </button>
 
           {/* Music Toggle */}
@@ -224,22 +282,22 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
             )}
           >
             <Music size={16} />
-            <span>{isMusicActive ? "Music On" : "Music Off"}</span>
+            Music
           </button>
 
           {/* Share Button */}
           <button
             type="button"
-            className="flex h-10 items-center gap-2 px-6 rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_20px_rgba(111,160,246,0.8)] hover:scale-[1.02] hover:brightness-105 ring-4 ring-blue-200/80 transition-all duration-300 transform font-medium text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/50 text-slate-600 hover:bg-white transition-colors border border-slate-200"
           >
             <Share2 size={16} />
-            <span>Share</span>
+            Share
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden relative px-8 pb-24 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden relative px-8 pb-0 custom-scrollbar">
         <ScenePlayer
           scene={currentScene}
           quiz={currentScene.quiz}
@@ -258,33 +316,52 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
         />
       </div>
 
-      {/* Sticky Footer Navigation */}
-      <footer className="sticky bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 px-8 py-4 z-50">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <button
-            type="button"
-            onClick={handlePrevScene}
-            disabled={currentSceneIndex === 0}
-            className="flex items-center gap-2 px-5 py-2.5 text-slate-500 hover:text-slate-700 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-slate-50"
-          >
-            <ChevronLeft size={20} />
-            Previous
-          </button>
+      {/* Sticky Footer with Audio Player */}
+      <footer className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 z-50">
+        {/* Audio Player Bar - Top of Footer */}
+        {audioSrc && (
+          <div className="border-b border-slate-100 bg-slate-50/50">
+            <div className="max-w-7xl mx-auto">
+              <SlimAudioPlayer
+                ref={audioPlayerRef}
+                src={audioSrc}
+                isActive={isNarratorActive}
+                onToggleActive={() => setIsNarratorActive(!isNarratorActive)}
+                onEnded={handleAudioEnded}
+                onReady={handleAudioReady}
+              />
+            </div>
+          </div>
+        )}
 
-          {/* Scene Counter */}
-          <span className="text-sm text-slate-400 font-medium">
-            Scene {currentSceneIndex + 1} of {scenes.length}
-          </span>
+        {/* Navigation Controls */}
+        <div className="px-8 py-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <button
+              type="button"
+              onClick={handlePrevScene}
+              disabled={currentSceneIndex === 0}
+              className="flex items-center gap-2 px-5 py-2.5 text-slate-500 hover:text-slate-700 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-slate-50"
+            >
+              <ChevronLeft size={20} />
+              Previous
+            </button>
 
-          <button
-            type="button"
-            onClick={handleNextScene}
-            disabled={currentSceneIndex === scenes.length - 1}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#3B82F6] text-white font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-blue-600 shadow-md shadow-blue-500/20"
-          >
-            Next
-            <ChevronRight size={20} />
-          </button>
+            {/* Scene Counter */}
+            <span className="text-sm text-slate-400 font-medium">
+              Scene {currentSceneIndex + 1} of {scenes.length}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleNextScene}
+              disabled={currentSceneIndex === scenes.length - 1}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#3B82F6] text-white font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-blue-600 shadow-md shadow-blue-500/20"
+            >
+              Next
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </footer>
     </div>

@@ -5,6 +5,7 @@ import type {
   SceneGenerationStatus,
 } from "@/components/lesson/loading-overlay";
 import { authClient } from "@/lib/auth/client";
+import type { LearningLevel, SceneCount } from "../_components/chat-input";
 
 export type Message = {
   role: "user" | "ai";
@@ -20,6 +21,10 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // Settings State
+  const [learningLevel, setLearningLevel] = useState<LearningLevel>("middle");
+  const [sceneCount, setSceneCount] = useState<SceneCount>("medium");
 
   // Generation State
   const [generationPhase, setGenerationPhase] =
@@ -46,7 +51,10 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSend = async () => {
+  const handleSend = async (
+    selectedLevel: LearningLevel,
+    selectedSceneCount: SceneCount,
+  ) => {
     if (!prompt.trim() && files.length === 0) return;
 
     // Redirect to login if not authenticated
@@ -82,17 +90,17 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
         body: JSON.stringify({
           userId: session?.user?.id || `anon_${Date.now()}`,
           prompt: currentPrompt,
-          targetAge: "middle", // Default, could add UI for this
-          sceneCount: "medium", // Default, could add UI for this
+          targetAge: selectedLevel,
+          sceneCount: selectedSceneCount,
         }),
       });
 
       const data = await response.json();
 
       if (data.success && data.lessonId) {
-        // Immediately redirect with query params for generation settings
+        // Redirect with the actual selected settings
         router.push(
-          `/lesson/${data.lessonId}?targetAge=middle&sceneCount=medium`,
+          `/lesson/${data.lessonId}?targetAge=${selectedLevel}&sceneCount=${selectedSceneCount}`,
         );
       } else {
         throw new Error(data.error || "Failed to create lesson");
@@ -132,5 +140,10 @@ export function useChat({ onClearInput }: UseChatProps = {}) {
     generationPhase,
     generationProgress,
     resetGeneration: handleContinue,
+    // Settings
+    learningLevel,
+    setLearningLevel,
+    sceneCount,
+    setSceneCount,
   };
 }

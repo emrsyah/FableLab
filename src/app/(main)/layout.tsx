@@ -1,6 +1,5 @@
 import { DottedBackground } from "@/components/ui/dotted-background";
 import { DoubleLayerWrapper } from "@/components/ui/double-layer-wrapper";
-import { AppHeader } from "../_components/app-header";
 import { AppSidebar } from "../_components/app-sidebar";
 
 export default function MainLayout({

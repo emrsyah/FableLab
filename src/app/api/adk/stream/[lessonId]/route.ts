@@ -4,6 +4,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { lessons } from "@/lib/db/schema/lessons";
 import { quizzes, scenes } from "@/lib/db/schema/scenes";
+import {
+  generateNarrationAudio,
+  selectVoiceForEducation,
+} from "@/lib/tts/gemini-tts";
 import type {
   AgentEvent,
   GeoGebraExperimentOutput,
@@ -186,6 +190,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
             .set({ title: storyContent.scenes[0].title })
             .where(eq(lessons.id, lessonId));
 
+          // Select voice based on target age
+          const voiceForAge = selectVoiceForEducation(
+            targetAge as "elementary" | "middle" | "high",
+          );
+
           // Create story scenes
           let sceneNumber = 1;
           for (const adkScene of storyContent.scenes) {
@@ -211,6 +220,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
               imageUrl = `https://placehold.co/1920x1080/3B82F6/FFFFFF/png?text=Scene+${sceneNumber}`;
             }
 
+            // Generate narration audio using Gemini TTS
+            let narrationUrl = "";
+            let narrationDuration = 0;
+            try {
+              sendEvent("status", {
+                message: `Generating narration audio for scene ${sceneNumber}...`,
+                agent: "System",
+              });
+              const narrationResult = await generateNarrationAudio(
+                adkScene.narration,
+                voiceForAge,
+              );
+              narrationUrl = narrationResult.audioUrl;
+              narrationDuration = narrationResult.durationSeconds;
+              sendEvent("scene_audio", { sceneNumber, audioUrl: narrationUrl });
+            } catch (audioError) {
+              console.error("Narration generation error:", audioError);
+              // Continue without audio - it's not critical
+            }
+
             // Insert scene
             await db.insert(scenes).values({
               lessonId: lessonId,
@@ -220,6 +249,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
               learningObjective: `Learning objective for scene ${sceneNumber}`,
               visualType: "image",
               imageUrl: imageUrl,
+              narrationUrl: narrationUrl || null,
+              narrationDuration: narrationDuration || null,
               hasQuiz: false,
             });
 
@@ -346,7 +377,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 /**
- * Generate image using Fal.ai
+ * Generate image using Fal.ai and upload to Uploadthing for permanent storage
  */
 async function generateImage(prompt: string, title: string): Promise<string> {
   const apiKey = process.env.FAL_KEY;
@@ -358,7 +389,7 @@ async function generateImage(prompt: string, title: string): Promise<string> {
 
   const fullPrompt = `A digital illustration for a STEM lesson. ${prompt}. Style: vibrant, educational, engaging for students.`;
 
-  const result: any = await subscribe("fal-ai/flux/schnell", {
+  const result: any = await subscribe("fal-ai/nano-banana", {
     input: {
       prompt: fullPrompt,
       image_size: "landscape_16_9",
@@ -369,9 +400,41 @@ async function generateImage(prompt: string, title: string): Promise<string> {
     logs: false,
   });
 
-  if (result.images && result.images.length > 0) {
-    return result.images[0].url;
+  if (!result.images || result.images.length === 0) {
+    throw new Error("No image returned from Fal.ai");
   }
 
-  throw new Error("No image returned from Fal.ai");
+  const tempImageUrl = result.images[0].url;
+
+  // Download the image from Fal.ai and re-upload to Uploadthing for permanent storage
+  try {
+    const { UTApi } = await import("uploadthing/server");
+    const utapi = new UTApi();
+
+    // Fetch the image from Fal.ai temporary URL
+    const imageResponse = await fetch(tempImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error("Failed to fetch image from Fal.ai");
+    }
+
+    const imageBlob = await imageResponse.blob();
+    const imageFile = new File([imageBlob], `scene-${Date.now()}.png`, {
+      type: "image/png",
+    });
+
+    // Upload to Uploadthing
+    const uploadResult = await utapi.uploadFiles([imageFile]);
+
+    if (uploadResult[0]?.data?.ufsUrl) {
+      return uploadResult[0].data.ufsUrl;
+    }
+
+    // Fallback to temporary URL if upload fails
+    console.warn("Uploadthing upload failed, using temporary Fal.ai URL");
+    return tempImageUrl;
+  } catch (uploadError) {
+    console.error("Error uploading image to Uploadthing:", uploadError);
+    // Fallback to temporary URL
+    return tempImageUrl;
+  }
 }

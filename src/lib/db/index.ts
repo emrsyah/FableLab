@@ -2,6 +2,7 @@ import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/neon-http";
 import { lessons } from "./schema/lessons";
+import * as relations from "./schema/relations";
 import { quizzes, scenes } from "./schema/scenes";
 import { postsTable, usersTable } from "./schema/users";
 
@@ -21,5 +22,6 @@ export const db = drizzle({
     lessons,
     scenes,
     quizzes,
+    ...relations,
   },
 });
