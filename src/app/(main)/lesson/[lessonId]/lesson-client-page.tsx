@@ -45,6 +45,10 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const audioPlayerRef = useRef<SlimAudioPlayerRef>(null);
 
+  // Karaoke sync state
+  const [currentNarrationTime, setCurrentNarrationTime] = useState(0);
+  const [isNarratorPlaying, setIsNarratorPlaying] = useState(false);
+
   // Get generation params from URL (passed when redirecting from create page)
   const targetAge = searchParams.get("targetAge") || "middle";
   const sceneCount = searchParams.get("sceneCount") || "medium";
@@ -177,6 +181,15 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
       audioPlayerRef.current?.play();
     }
   }, [isNarratorActive]);
+
+  // Handle time updates for karaoke sync
+  const handleAudioTimeUpdate = useCallback(
+    (time: number, isPlaying: boolean) => {
+      setCurrentNarrationTime(time);
+      setIsNarratorPlaying(isPlaying);
+    },
+    [],
+  );
 
   // Show generation overlay if lesson is in generating state
   if (lesson?.status === "generating") {
@@ -313,6 +326,8 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
           isMusicActive={isMusicActive}
           onToggleNarrator={() => setIsNarratorActive(!isNarratorActive)}
           onToggleMusic={() => setIsMusicActive(!isMusicActive)}
+          currentNarrationTime={currentNarrationTime}
+          isNarratorPlaying={isNarratorPlaying}
         />
       </div>
 
@@ -329,6 +344,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
                 onToggleActive={() => setIsNarratorActive(!isNarratorActive)}
                 onEnded={handleAudioEnded}
                 onReady={handleAudioReady}
+                onTimeUpdate={handleAudioTimeUpdate}
               />
             </div>
           </div>

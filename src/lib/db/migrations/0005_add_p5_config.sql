@@ -1,0 +1,1 @@
+ALTER TABLE "scenes" ADD COLUMN "p5_config" text;

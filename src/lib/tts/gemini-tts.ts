@@ -41,17 +41,141 @@ export const GEMINI_TTS_VOICES = [
 
 export type GeminiVoice = (typeof GEMINI_TTS_VOICES)[number];
 
+/**
+ * Word-level alignment data for karaoke effect
+ */
+export interface NarrationAlignment {
+  characters: string[];
+  character_start_times_seconds: number[];
+  character_end_times_seconds: number[];
+}
+
 interface GenerateNarrationResult {
   audioUrl: string;
   durationSeconds: number;
+  alignment?: NarrationAlignment;
+}
+
+/**
+ * Generate word-level alignments using Gemini's audio understanding.
+ * Takes the audio URL and original transcript, returns character-level timing.
+ */
+async function generateWordAlignments(
+  audioBase64: string,
+  transcript: string,
+): Promise<NarrationAlignment | null> {
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+  if (!apiKey) {
+    console.error("No API key for alignment generation");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: "audio/wav",
+                    data: audioBase64,
+                  },
+                },
+                {
+                  text: `You are a precise audio alignment tool. Listen to this audio and align it with the following transcript. For EACH WORD in the transcript, provide the exact start and end time in seconds when that word is spoken.
+
+TRANSCRIPT:
+${transcript}
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "words": [
+    { "word": "first_word", "start": 0.0, "end": 0.5 },
+    { "word": "second_word", "start": 0.5, "end": 1.0 }
+  ]
+}
+
+Rules:
+1. Include EVERY word from the transcript, in order
+2. Times must be in seconds with decimal precision
+3. Words should not overlap
+4. Cover the entire audio duration
+5. Return ONLY the JSON, no markdown or explanation`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.1,
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini Alignment Error:", errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!responseText) {
+      console.error("No alignment data in response");
+      return null;
+    }
+
+    // Parse the JSON response
+    const alignmentData = JSON.parse(responseText) as {
+      words: Array<{ word: string; start: number; end: number }>;
+    };
+
+    if (!alignmentData.words || !Array.isArray(alignmentData.words)) {
+      console.error("Invalid alignment data structure");
+      return null;
+    }
+
+    // Convert to our schema format (word-level, not character-level)
+    const characters: string[] = [];
+    const startTimes: number[] = [];
+    const endTimes: number[] = [];
+
+    for (const wordData of alignmentData.words) {
+      characters.push(wordData.word);
+      startTimes.push(wordData.start);
+      endTimes.push(wordData.end);
+    }
+
+    return {
+      characters,
+      character_start_times_seconds: startTimes,
+      character_end_times_seconds: endTimes,
+    };
+  } catch (error) {
+    console.error("Error generating word alignments:", error);
+    return null;
+  }
 }
 
 /**
  * Generate narration audio using Gemini TTS API and upload to Uploadthing.
+ * Also generates word-level alignments for karaoke effect.
  *
  * @param text - The narration text to convert to speech
  * @param voiceName - The voice to use (default: "Kore" - firm, educational voice)
- * @returns Object with audioUrl and estimated duration
+ * @returns Object with audioUrl, duration, and optional alignment data
  */
 export async function generateNarrationAudio(
   text: string,
@@ -126,8 +250,12 @@ export async function generateNarrationAudio(
     { type: "audio/wav" },
   );
 
-  // Upload to Uploadthing
-  const uploadResult = await utapi.uploadFiles([audioFile]);
+  // Run upload and alignment generation in parallel
+  const wavBase64 = wavBuffer.toString("base64");
+  const [uploadResult, alignment] = await Promise.all([
+    utapi.uploadFiles([audioFile]),
+    generateWordAlignments(wavBase64, text),
+  ]);
 
   if (!uploadResult[0]?.data?.ufsUrl) {
     throw new Error("Failed to upload audio to Uploadthing");
@@ -140,6 +268,7 @@ export async function generateNarrationAudio(
   return {
     audioUrl: uploadResult[0].data.ufsUrl,
     durationSeconds,
+    alignment: alignment ?? undefined,
   };
 }
 

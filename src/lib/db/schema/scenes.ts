@@ -25,12 +25,13 @@ export const scenes = pgTable("scenes", {
 
   // Visual
   visualType: text("visual_type", {
-    enum: ["image", "geogebra", "video"],
+    enum: ["image", "geogebra", "p5", "video"],
   })
     .default("image")
     .notNull(),
   imageUrl: text("image_url"),
-  geogebraConfig: text("geogebra_config"), // XML or commands
+  geogebraConfig: text("geogebra_config"), // Legacy: XML or commands
+  p5Config: text("p5_config"), // JSON: { p5_code, setup_instructions, interaction_guide, learning_objectives, variables }
 
   // Audio
   narrationUrl: text("narration_url"),

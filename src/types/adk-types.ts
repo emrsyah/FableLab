@@ -72,7 +72,7 @@ export interface StoryContentOutput {
 }
 
 // =============================================================================
-// GeoGebra Experiment Types
+// GeoGebra Experiment Types (Legacy)
 // =============================================================================
 
 export interface GeoGebraExperimentOutput {
@@ -80,6 +80,18 @@ export interface GeoGebraExperimentOutput {
   setup_instructions: string;
   interaction_guide: string;
   learning_objectives: string[];
+}
+
+// =============================================================================
+// p5.js Experiment Types
+// =============================================================================
+
+export interface P5ExperimentOutput {
+  p5_code: string;
+  setup_instructions: string;
+  interaction_guide: string;
+  learning_objectives: string[];
+  variables: string[];
 }
 
 // =============================================================================
@@ -200,5 +212,15 @@ export type AgentName =
   | "GraphMasterFormatter"
   | "GraphMasterValidator"
   | "GraphMasterPipeline"
+  // New 5-agent p5.js pipeline (replaces old 2-agent P5Master* agents)
+  | "P5Researcher"
+  | "ExperimentDesigner"
+  | "InteractionDesigner"
+  | "P5CodeGenerator"
+  | "ExperimentAssembler"
+  // Legacy p5 agents (for backward compatibility)
+  | "P5MasterResearcher"
+  | "P5MasterGenerator"
+  | "P5MasterPipeline"
   | "ParallelContentCreators"
   | "Finisher";

@@ -42,9 +42,12 @@ export const scenesRouter = router({
         title: z.string(),
         storyText: z.string(),
         learningObjective: z.string(),
-        visualType: z.enum(["image", "geogebra", "video"]).default("image"),
+        visualType: z
+          .enum(["image", "geogebra", "p5", "video"])
+          .default("image"),
         imageUrl: z.string().optional(),
         geogebraConfig: z.string().optional(),
+        p5Config: z.string().optional(),
         narrationUrl: z.string().optional(),
         narrationDuration: z.number().optional(),
         backgroundMusicUrl: z.string().optional(),
@@ -63,6 +66,7 @@ export const scenesRouter = router({
           visualType: input.visualType,
           imageUrl: input.imageUrl,
           geogebraConfig: input.geogebraConfig,
+          p5Config: input.p5Config,
           narrationUrl: input.narrationUrl,
           narrationDuration: input.narrationDuration,
           backgroundMusicUrl: input.backgroundMusicUrl,

@@ -43,6 +43,16 @@ const AGENT_LABELS: Record<string, { label: string; emoji: string }> = {
   GraphMasterFormatter: { label: "Experiment Builder", emoji: "🔬" },
   GraphMasterValidator: { label: "Validator", emoji: "✅" },
   GraphMasterPipeline: { label: "Creator", emoji: "⚡" },
+  // New 5-agent p5.js pipeline
+  P5Researcher: { label: "p5.js Researcher", emoji: "🔍" },
+  ExperimentDesigner: { label: "Learning Designer", emoji: "🎯" },
+  InteractionDesigner: { label: "UX Designer", emoji: "🎨" },
+  P5CodeGenerator: { label: "Code Generator", emoji: "💻" },
+  ExperimentAssembler: { label: "Experiment Builder", emoji: "🧪" },
+  // Legacy p5 agents (for backward compatibility)
+  P5MasterResearcher: { label: "p5.js Researcher", emoji: "🔍" },
+  P5MasterGenerator: { label: "Code Generator", emoji: "💻" },
+  P5MasterPipeline: { label: "Experiment Builder", emoji: "🧪" },
   ParallelContentCreators: { label: "Content Team", emoji: "🎨" },
   Finisher: { label: "Finalizer", emoji: "🏁" },
   System: { label: "System", emoji: "⚙️" },

@@ -17,6 +17,7 @@ interface AudioPlayerBarProps {
   onToggleActive: () => void;
   onEnded?: () => void;
   onReady?: () => void;
+  onTimeUpdate?: (currentTime: number) => void;
   className?: string;
 }
 
@@ -37,7 +38,7 @@ export const AudioPlayerBar = forwardRef<
   AudioPlayerBarRef,
   AudioPlayerBarProps
 >(function AudioPlayerBar(
-  { src, isActive, onToggleActive, onEnded, onReady, className },
+  { src, isActive, onToggleActive, onEnded, onReady, onTimeUpdate, className },
   ref,
 ) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -100,9 +101,11 @@ export const AudioPlayerBar = forwardRef<
 
   const handleTimeUpdate = useCallback(() => {
     if (audioRef.current && !isDragging) {
-      setCurrentTime(audioRef.current.currentTime);
+      const time = audioRef.current.currentTime;
+      setCurrentTime(time);
+      onTimeUpdate?.(time);
     }
-  }, [isDragging]);
+  }, [isDragging, onTimeUpdate]);
 
   const handleEnded = useCallback(() => {
     setIsPlaying(false);

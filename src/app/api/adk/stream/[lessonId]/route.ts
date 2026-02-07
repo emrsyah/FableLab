@@ -10,12 +10,13 @@ import {
 } from "@/lib/tts/gemini-tts";
 import type {
   AgentEvent,
-  GeoGebraExperimentOutput,
+  P5ExperimentOutput,
   StoryContentOutput,
 } from "@/types/adk-types";
 
 const ADK_API_URL = "http://localhost:8000";
-const APP_NAME = "fable_agent";
+const APP_NAME = "fable_agent_p5";
+const DEV = true;
 
 type RouteContext = {
   params: Promise<{ lessonId: string }>;
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         const decoder = new TextDecoder();
         let buffer = "";
         let storyContent: StoryContentOutput | null = null;
-        let geogebraExperiment: GeoGebraExperimentOutput | null = null;
+        let p5Experiment: P5ExperimentOutput | null = null;
 
         // Process SSE stream from ADK
         while (true) {
@@ -154,11 +155,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
                   });
                 }
 
-                if (stateDelta.geogebra_experiment) {
-                  geogebraExperiment =
-                    stateDelta.geogebra_experiment as GeoGebraExperimentOutput;
+                if (stateDelta.p5_experiment) {
+                  p5Experiment = stateDelta.p5_experiment as P5ExperimentOutput;
                   sendEvent("status", {
-                    message: "GeoGebra experiment received",
+                    message: "p5.js experiment received",
                     agent: event.author,
                   });
                 }
@@ -206,14 +206,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
             // Generate image using Fal.ai
             let imageUrl = "";
             try {
-              sendEvent("status", {
-                message: `Generating image for scene ${sceneNumber}...`,
-                agent: "System",
-              });
-              imageUrl = await generateImage(
-                adkScene.image_prompt,
-                adkScene.title,
-              );
+              if (DEV) {
+                imageUrl = `https://placehold.co/1920x1080/3B82F6/FFFFFF/png?text=Scene+${sceneNumber}`;
+              } else {
+                sendEvent("status", {
+                  message: `Generating image for scene ${sceneNumber}...`,
+                  agent: "System",
+                });
+                imageUrl = await generateImage(
+                  adkScene.image_prompt,
+                  adkScene.title,
+                );
+              }
               sendEvent("scene_image", { sceneNumber, imageUrl });
             } catch (imgError) {
               console.error("Image generation error:", imgError);
@@ -223,18 +227,29 @@ export async function GET(request: NextRequest, context: RouteContext) {
             // Generate narration audio using Gemini TTS
             let narrationUrl = "";
             let narrationDuration = 0;
+            let narrationAlignment: {
+              characters: string[];
+              character_start_times_seconds: number[];
+              character_end_times_seconds: number[];
+            } | null = null;
             try {
-              sendEvent("status", {
-                message: `Generating narration audio for scene ${sceneNumber}...`,
-                agent: "System",
-              });
-              const narrationResult = await generateNarrationAudio(
-                adkScene.narration,
-                voiceForAge,
-              );
-              narrationUrl = narrationResult.audioUrl;
-              narrationDuration = narrationResult.durationSeconds;
-              sendEvent("scene_audio", { sceneNumber, audioUrl: narrationUrl });
+              if (!DEV) {
+                sendEvent("status", {
+                  message: `Generating narration audio for scene ${sceneNumber}...`,
+                  agent: "System",
+                });
+                const narrationResult = await generateNarrationAudio(
+                  adkScene.narration,
+                  voiceForAge,
+                );
+                narrationUrl = narrationResult.audioUrl;
+                narrationDuration = narrationResult.durationSeconds;
+                narrationAlignment = narrationResult.alignment ?? null;
+                sendEvent("scene_audio", {
+                  sceneNumber,
+                  audioUrl: narrationUrl,
+                });
+              }
             } catch (audioError) {
               console.error("Narration generation error:", audioError);
               // Continue without audio - it's not critical
@@ -251,6 +266,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
               imageUrl: imageUrl,
               narrationUrl: narrationUrl || null,
               narrationDuration: narrationDuration || null,
+              narrationAlignment: narrationAlignment,
               hasQuiz: false,
             });
 
@@ -258,39 +274,32 @@ export async function GET(request: NextRequest, context: RouteContext) {
             sceneNumber++;
           }
 
-          // Add GeoGebra scene if available
-          if (geogebraExperiment) {
+          // Add p5.js experiment scene if available
+          if (p5Experiment) {
             sendEvent("status", {
-              message: "Creating GeoGebra experiment scene...",
+              message: "Creating p5.js experiment scene...",
               agent: "System",
             });
 
-            const [_geoScene] = await db
+            const [_p5Scene] = await db
               .insert(scenes)
               .values({
                 lessonId: lessonId,
                 sceneNumber: sceneNumber,
                 title: "Interactive Experiment",
                 storyText:
-                  geogebraExperiment.setup_instructions ||
+                  p5Experiment.setup_instructions ||
                   "Explore this interactive experiment to deepen your understanding.",
                 learningObjective:
-                  geogebraExperiment.learning_objectives?.join(", ") ||
+                  p5Experiment.learning_objectives?.join(", ") ||
                   "Interactive learning",
-                visualType: "geogebra",
-                geogebraConfig: JSON.stringify({
-                  appName: "classic",
-                  commands: geogebraExperiment.geogebra_commands,
-                  description: geogebraExperiment.setup_instructions,
-                  educationalNotes: geogebraExperiment.interaction_guide
-                    ? [geogebraExperiment.interaction_guide]
-                    : [],
-                }),
+                visualType: "p5",
+                p5Config: JSON.stringify(p5Experiment),
                 hasQuiz: false,
               })
               .returning();
 
-            sendEvent("scene_ready", { sceneNumber, type: "geogebra" });
+            sendEvent("scene_ready", { sceneNumber, type: "p5" });
             sceneNumber++;
           }
 

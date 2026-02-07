@@ -36,6 +36,13 @@
       "when": 1770220791815,
       "tag": "0004_add-lesson-status",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770438626018,
+      "tag": "0005_add_p5_config",
+      "breakpoints": true
     }
   ]
 }

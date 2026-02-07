@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { anonymous } from "better-auth/plugins";
 import { db } from "@/lib/db"; // your drizzle instance
 import * as schema from "./schema";
 
@@ -8,9 +9,7 @@ export const auth = betterAuth({
     provider: "pg", // or "mysql", "sqlite"
     schema,
   }),
-  emailAndPassword: {
-    enabled: true,
-  },
+  plugins: [anonymous()],
   socialProviders: {
     google: {
       enabled: true,

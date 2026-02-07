@@ -12,6 +12,7 @@ const mockScene: Scene = {
   visualType: "image",
   imageUrl: null,
   geogebraConfig: null,
+  p5Config: null,
   narrationUrl: null,
   narrationDuration: null,
   backgroundMusicUrl: null,

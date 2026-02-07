@@ -17,6 +17,7 @@ interface SlimAudioPlayerProps {
   onToggleActive: () => void;
   onEnded?: () => void;
   onReady?: () => void;
+  onTimeUpdate?: (currentTime: number, isPlaying: boolean) => void;
   className?: string;
 }
 
@@ -37,7 +38,7 @@ export const SlimAudioPlayer = forwardRef<
   SlimAudioPlayerRef,
   SlimAudioPlayerProps
 >(function SlimAudioPlayer(
-  { src, isActive, onToggleActive, onEnded, onReady, className },
+  { src, isActive, onToggleActive, onEnded, onReady, onTimeUpdate, className },
   ref,
 ) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -103,9 +104,11 @@ export const SlimAudioPlayer = forwardRef<
 
   const handleTimeUpdate = useCallback(() => {
     if (audioRef.current && !isDragging) {
-      setCurrentTime(audioRef.current.currentTime);
+      const time = audioRef.current.currentTime;
+      setCurrentTime(time);
+      onTimeUpdate?.(time, !audioRef.current.paused);
     }
-  }, [isDragging]);
+  }, [isDragging, onTimeUpdate]);
 
   const handleEnded = useCallback(() => {
     setIsPlaying(false);

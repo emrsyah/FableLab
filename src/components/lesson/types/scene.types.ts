@@ -5,9 +5,10 @@ export type Scene = {
   title: string;
   storyText: string;
   learningObjective: string;
-  visualType: "image" | "geogebra" | "video";
+  visualType: "image" | "geogebra" | "p5" | "video";
   imageUrl: string | null;
-  geogebraConfig: string | null;
+  geogebraConfig: string | null; // Legacy
+  p5Config: string | null; // JSON: P5ExperimentOutput
   narrationUrl: string | null;
   narrationDuration: number | null;
   backgroundMusicUrl: string | null;
@@ -51,6 +52,10 @@ export interface ScenePlayerProps {
   isMusicActive: boolean;
   onToggleNarrator: () => void;
   onToggleMusic: () => void;
+
+  // Karaoke text sync
+  currentNarrationTime?: number;
+  isNarratorPlaying?: boolean;
 
   // Callbacks
   onQuizComplete: (correct: boolean) => void;

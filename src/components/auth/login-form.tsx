@@ -1,12 +1,12 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import { AuthDivider } from "./auth-divider";
-import { PasswordInput } from "./password-input";
 import { SocialButton } from "./social-button";
 
 interface LoginFormProps {
@@ -14,34 +14,30 @@ interface LoginFormProps {
 }
 
 /**
- * Login form component with email/password and social login options.
- * Follows the Figma design with pill-shaped submit button.
+ * Login form component with Google and Anonymous login options.
  */
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<
-    "google" | "microsoft" | null
-  >(null);
+  const [socialLoading, setSocialLoading] = useState<"google" | null>(null);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAnonymousLogin = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const { error } = await authClient.signIn.email({
-        email,
-        password,
-        callbackURL: "/",
-      });
+      const { error } = await authClient.signIn.anonymous();
 
       if (error) {
-        setError(error.message || "Invalid email or password");
+        setError(error.message || "Failed to sign in anonymously");
       } else {
-        onSuccess?.();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push("/");
+          router.refresh();
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -51,25 +47,17 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     }
   };
 
-  const handleSocialLogin = async (provider: "google" | "microsoft") => {
+  const handleSocialLogin = async (provider: "google") => {
     setSocialLoading(provider);
     setError("");
 
     try {
-      if (provider === "google") {
-        await authClient.signIn.social({
-          provider: "google",
-          callbackURL: "/",
-        });
-      } else {
-        // Microsoft OAuth - would need to be configured in Better Auth
-        setError("Microsoft login is not yet available");
-        setSocialLoading(null);
-      }
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
     } catch (err) {
-      setError(
-        `${provider === "google" ? "Google" : "Microsoft"} sign in failed`,
-      );
+      setError("Google sign in failed");
       console.error(err);
       setSocialLoading(null);
     }
@@ -80,65 +68,32 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       {/* Title */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-          Welcome Back to FableLab AI 👋
+          Welcome to FableLab AI 👋
         </h1>
+        <p className="text-sm text-gray-500">
+          Sign in to access your learning playground
+        </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Email Field */}
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="Enter Your Email"
-            className="h-12 w-full rounded-full border border-gray-200 bg-white px-4 text-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
+      {/* Social Login Buttons */}
+      <div className="grid gap-3">
+        <SocialButton
+          provider="google"
+          onClick={() => handleSocialLogin("google")}
+          loading={socialLoading === "google"}
+          disabled={loading || socialLoading !== null}
+        />
+      </div>
 
-        {/* Password Field */}
-        <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-gray-700"
-          >
-            Password
-          </label>
-          <PasswordInput
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Enter Your Password"
-            minLength={8}
-          />
-          <div className="flex justify-end">
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-500 hover:text-blue-600"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-        </div>
+      {/* Divider */}
+      <AuthDivider />
 
-        {/* Error Message */}
-        {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-        {/* Submit Button */}
+      {/* Anonymous Login */}
+      <div className="space-y-4">
         <Button
-          type="submit"
-          className="h-12 w-full text-base rounded-full bg-[radial-gradient(ellipse_at_center,#6FA0F6_0%,#3C7AE8_80%)] text-white shadow-md hover:shadow-[0_0_20px_rgba(111,160,246,0.6)] hover:scale-[1.02] hover:brightness-105 border border-[#6FA0F6] transition-all duration-300 transform"
+          onClick={handleAnonymousLogin}
+          className="h-12 w-full text-base rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 shadow-sm border border-gray-200 transition-all duration-300 transform font-medium flex items-center justify-center gap-2"
+          disabled={loading || socialLoading !== null}
         >
           {loading ? (
             <>
@@ -146,40 +101,24 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               Signing in...
             </>
           ) : (
-            "Login"
+            <>
+              <User className="size-5" />
+              Continue as Guest
+            </>
           )}
         </Button>
-      </form>
-
-      {/* Divider */}
-      <AuthDivider />
-
-      {/* Social Login Buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        <SocialButton
-          provider="google"
-          onClick={() => handleSocialLogin("google")}
-          loading={socialLoading === "google"}
-          disabled={loading || socialLoading !== null}
-        />
-        <SocialButton
-          provider="microsoft"
-          onClick={() => handleSocialLogin("microsoft")}
-          loading={socialLoading === "microsoft"}
-          disabled={loading || socialLoading !== null}
-        />
+        <p className="text-center text-xs text-gray-500">
+          Guest accounts allow you to try FableLab without providing personal
+          information.
+        </p>
       </div>
 
-      {/* Register Link */}
-      <p className="text-center text-sm text-gray-600">
-        Don&apos;t Have an Account?{" "}
-        <Link
-          href="/register"
-          className="font-medium text-blue-500 hover:text-blue-600 hover:underline"
-        >
-          Register Here
-        </Link>
-      </p>
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

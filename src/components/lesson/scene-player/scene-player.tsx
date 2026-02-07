@@ -22,6 +22,8 @@ export function ScenePlayer({
   isMusicActive,
   onToggleNarrator,
   onToggleMusic,
+  currentNarrationTime = 0,
+  isNarratorPlaying = false,
 }: ScenePlayerProps) {
   const { status, setReady, play, pause, handleAudioEnd, handleQuizCorrect } =
     useSceneState(scene, quiz);
@@ -133,6 +135,8 @@ export function ScenePlayer({
           scene={scene}
           currentSceneIndex={currentSceneIndex}
           totalScenes={totalScenes}
+          currentNarrationTime={currentNarrationTime}
+          isNarratorPlaying={isNarratorPlaying}
         />
       )}
 
