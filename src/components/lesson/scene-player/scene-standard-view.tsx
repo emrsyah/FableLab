@@ -33,16 +33,21 @@ export function SceneStandardView({
           scene={scene}
           currentSceneIndex={currentSceneIndex}
           totalScenes={totalScenes}
+          currentNarrationTime={currentNarrationTime}
+          isNarratorPlaying={isNarratorPlaying}
         />
       </div>
 
       {/* 2. Scene Narrative (with karaoke highlighting when available) */}
-      <SceneNarrative
-        text={scene.storyText || "No narrative available for this scene."}
-        alignment={scene.narrationAlignment}
-        currentTime={currentNarrationTime}
-        isPlaying={isNarratorPlaying}
-      />
+      {/* Hide narrative panel for p5 experiments (moved to modal inside SceneVisuals) */}
+      {scene.visualType !== "p5" && (
+        <SceneNarrative
+          text={scene.storyText || "No narrative available for this scene."}
+          alignment={scene.narrationAlignment}
+          currentTime={currentNarrationTime}
+          isPlaying={isNarratorPlaying}
+        />
+      )}
     </>
   );
 }

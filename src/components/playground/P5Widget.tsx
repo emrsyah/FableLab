@@ -24,7 +24,40 @@ export function P5Widget({
   className = "",
 }: P5WidgetProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  // Track container size with ResizeObserver
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateSize = () => {
+      const rect = container.getBoundingClientRect();
+      setContainerSize({ width: rect.width, height: rect.height });
+    };
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(container);
+    updateSize();
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Send size updates to iframe
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow && containerSize.width > 0) {
+      iframeRef.current.contentWindow.postMessage(
+        {
+          type: "container-resize",
+          width: containerSize.width,
+          height: containerSize.height,
+        },
+        "*",
+      );
+    }
+  }, [containerSize]);
 
   useEffect(() => {
     if (!code) return;
@@ -44,35 +77,28 @@ export function P5Widget({
       overflow: hidden;
     }
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
       background: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    main {
-      position: relative;
+    /* Full-size container */
+    #sketch-container {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
-    #sketch-container, #canvas-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-    }
+    
     canvas {
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-      border-radius: 12px;
+      display: block;
       max-width: 100%;
       max-height: 100%;
+      width: auto;
+      height: auto;
     }
 
     /* Enhanced styling for p5 DOM elements */
@@ -171,46 +197,80 @@ export function P5Widget({
     button.predict-button:hover {
       box-shadow: 0 6px 8px -1px rgba(245, 158, 11, 0.4);
     }
-
-    .controls-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      margin-top: 16px;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-      max-width: 100%;
-    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js"></script>
 </head>
 <body>
-  <main id="sketch-container">
-    <div id="canvas-container"></div>
-  </main>
+  <main id="sketch-container"></main>
+  
   <script>
-    // Error handling - defined in separate script to catch syntax errors in user code
+    // --- Error handling ---
     window.onerror = function(msg, url, line, col, error) {
-      parent.postMessage({
-        type: 'p5-error',
-        message: msg,
-        line: line,
-        column: col,
-        stack: error?.stack
-      }, '*');
+      parent.postMessage({ type: 'p5-error', message: msg, line: line, column: col, stack: error?.stack }, '*');
       return true;
     };
-
-    // Catch unhandled promise rejections
     window.addEventListener('unhandledrejection', function(event) {
-      parent.postMessage({
-        type: 'p5-error',
-        message: 'Unhandled promise: ' + event.reason,
-      }, '*');
+      parent.postMessage({ type: 'p5-error', message: 'Unhandled promise: ' + event.reason }, '*');
+    });
+
+    const container = document.getElementById('sketch-container');
+    let containerWidth = window.innerWidth;
+    let containerHeight = window.innerHeight;
+    let canvasElement = null;
+    let originalWidth = 800;
+    let originalHeight = 600;
+
+    // Observe body for p5 elements and move them to container
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.tagName === 'CANVAS' && !canvasElement) {
+             canvasElement = node;
+             originalWidth = node.width;
+             originalHeight = node.height;
+             container.appendChild(node);
+             resizeCanvas();
+          } else if (['BUTTON', 'INPUT', 'SELECT', 'DIV'].includes(node.tagName)) {
+             container.appendChild(node);
+          }
+        }
+      }
+    });
+    
+    observer.observe(document.body, { childList: true });
+
+    function resizeCanvas() {
+      if (!canvasElement) return;
+      
+      // Calculate scale to fit while maintaining aspect ratio
+      const scaleX = containerWidth / originalWidth;
+      const scaleY = containerHeight / originalHeight;
+      const scale = Math.min(scaleX, scaleY);
+      
+      const newWidth = Math.floor(originalWidth * scale);
+      const newHeight = Math.floor(originalHeight * scale);
+      
+      // Use CSS to scale the canvas (preserves p5 coordinate system)
+      canvasElement.style.width = newWidth + 'px';
+      canvasElement.style.height = newHeight + 'px';
+    }
+
+    // Listen for resize messages from parent
+    window.addEventListener('message', function(event) {
+      if (event.data?.type === 'container-resize') {
+        containerWidth = event.data.width;
+        containerHeight = event.data.height;
+        resizeCanvas();
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      containerWidth = window.innerWidth;
+      containerHeight = window.innerHeight;
+      resizeCanvas();
     });
   </script>
+
   <script>
     // User's p5.js code
     ${code.replace(/<\/script>/g, "<\\/script>")}
@@ -221,7 +281,6 @@ export function P5Widget({
 
     // Set the iframe content
     if (iframeRef.current) {
-      console.log("htmlContent", htmlContent);
       iframeRef.current.srcdoc = htmlContent;
     }
 
@@ -239,24 +298,6 @@ export function P5Widget({
     return () => window.removeEventListener("message", handleMessage);
   }, [code]);
 
-  // Extract canvas dimensions from code
-  const [canvasSize, setCanvasSize] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-
-  useEffect(() => {
-    // Try to find createCanvas(width, height) or createCanvas(width, height, renderer)
-    const match = code.match(
-      /createCanvas\s*\(\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*\w+)?\s*\)/,
-    );
-    if (match) {
-      setCanvasSize({ width: parseInt(match[1]), height: parseInt(match[2]) });
-    } else {
-      setCanvasSize(null);
-    }
-  }, [code]);
-
   if (!code) {
     return (
       <div
@@ -268,48 +309,15 @@ export function P5Widget({
     );
   }
 
-  // For complex experiments with sidebars (like the 5-phase pipeline),
-  // we need to ensure the iframe is large enough to show all controls
-  // The p5.js code uses createCanvas(900, 600) + sidebar (250px) = ~1150px width
-  const DEFAULT_EXPERIMENT_WIDTH = 900;
-  const SIDEBAR_WIDTH = 250;
-  const TOTAL_WIDTH = DEFAULT_EXPERIMENT_WIDTH + SIDEBAR_WIDTH;
-  const DEFAULT_EXPERIMENT_HEIGHT = 600;
-  const CONTROLS_PADDING = 100; // Extra space for phase controls
-
-  // Calculate dimensions
-  const contentWidth = canvasSize
-    ? Math.max(canvasSize.width + SIDEBAR_WIDTH, TOTAL_WIDTH)
-    : TOTAL_WIDTH;
-  const contentHeight = canvasSize
-    ? canvasSize.height + CONTROLS_PADDING
-    : DEFAULT_EXPERIMENT_HEIGHT + CONTROLS_PADDING;
-
-  // Resolve dimensions - prefer explicit content dimensions for experiments
-  const resolvedWidth =
-    typeof width === "number"
-      ? width
-      : contentWidth
-        ? `${contentWidth}px`
-        : width;
-
-  const resolvedHeight =
-    typeof height === "number"
-      ? height
-      : contentHeight
-        ? `${Math.max(contentHeight, 600)}px`
-        : height;
-
   return (
     <div
-      className={`relative overflow-auto ${className}`}
+      ref={containerRef}
+      className={`relative overflow-hidden ${className}`}
       style={{
-        width: typeof width === "number" ? width : "100%",
-        height: typeof height === "number" ? height : "100%",
-        minHeight: "500px",
+        width: typeof width === "number" ? `${width}px` : width,
+        height: typeof height === "number" ? `${height}px` : height,
       }}
     >
-      <div>{/* {code} */}</div>
       {error && (
         <div className="absolute top-2 left-2 right-2 bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-sm z-10 shadow-sm">
           <p className="font-semibold">Experiment Error</p>
@@ -319,15 +327,9 @@ export function P5Widget({
       <iframe
         ref={iframeRef}
         title="p5.js Sketch"
-        style={{
-          width: resolvedWidth,
-          height: resolvedHeight,
-          minWidth: "100%",
-          minHeight: "100%",
-        }}
-        className="border-0 rounded-lg bg-white shadow-lg block"
+        className="border-0 block w-full h-full bg-slate-50"
         sandbox="allow-scripts allow-same-origin"
-        scrolling="auto"
+        scrolling="no"
       />
     </div>
   );

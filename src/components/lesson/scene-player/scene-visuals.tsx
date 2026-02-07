@@ -7,6 +7,7 @@ import {
   HelpCircle,
   Lightbulb,
   MousePointer2,
+  Notebook,
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
@@ -34,17 +35,22 @@ import { cn } from "@/lib/utils";
 import type { P5ExperimentOutput } from "@/types/adk-types";
 import type { GeoGebraConfig } from "@/types/geogebra";
 import type { Scene } from "../types/scene.types";
+import { KaraokeText } from "./karaoke-text";
 
 interface SceneVisualsProps {
   scene: Scene;
   currentSceneIndex: number;
   totalScenes: number;
+  currentNarrationTime?: number;
+  isNarratorPlaying?: boolean;
 }
 
 export function SceneVisuals({
   scene,
   currentSceneIndex,
   totalScenes,
+  currentNarrationTime = 0,
+  isNarratorPlaying = false,
 }: SceneVisualsProps) {
   const [showBorder, setShowBorder] = useState(false);
   const [_geogebraApi, setGeogebraApi] = useState<any>(null);
@@ -89,121 +95,150 @@ export function SceneVisuals({
     return (
       <div className="relative w-full">
         {/* Main Experiment Container - Simple Layout */}
-        <div className="relative w-full bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-gray-100">
-          {/* Help Button - Using shadcn Dialog */}
-          {p5Config && (
+        <div className="relative w-full h-[calc(100vh-140px)] bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+            {/* Story Button - Opens Narrative Modal */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="absolute top-4 right-4 z-20 flex items-center gap-2 shadow-md"
+                  className="flex items-center gap-2 shadow-md bg-white/90 backdrop-blur-sm hover:bg-white"
                 >
-                  <HelpCircle className="w-4 h-4" />
-                  <span>Help</span>
+                  <Notebook className="w-4 h-4" />
+                  <span>Story</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0">
-                <DialogHeader className="px-6 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
-                  <DialogTitle className="flex items-center gap-2 text-white">
-                    <Beaker className="w-5 h-5" />
-                    Experiment Guide
-                  </DialogTitle>
-                  <DialogDescription className="text-purple-100">
-                    Learn how to use this interactive experiment
-                  </DialogDescription>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Story</DialogTitle>
                 </DialogHeader>
-
-                <ScrollArea className="max-h-[calc(85vh-180px)]">
-                  <div className="p-6 space-y-6">
-                    {/* Setup Instructions */}
-                    {p5Config.setup_instructions && (
-                      <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
-                        <h3 className="flex items-center gap-2 font-semibold text-purple-900 mb-2">
-                          <BookOpen className="w-4 h-4" />
-                          About This Experiment
-                        </h3>
-                        <p className="text-sm text-purple-800 leading-relaxed">
-                          {p5Config.setup_instructions}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Learning Objectives */}
-                    {p5Config.learning_objectives &&
-                      p5Config.learning_objectives.length > 0 && (
-                        <div>
-                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
-                            <Lightbulb className="w-4 h-4 text-amber-500" />
-                            Learning Objectives
-                          </h3>
-                          <ul className="space-y-2">
-                            {p5Config.learning_objectives.map(
-                              (objective, i) => (
-                                <li
-                                  key={i}
-                                  className="flex gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"
-                                >
-                                  <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
-                                    {i + 1}
-                                  </span>
-                                  {objective}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        </div>
-                      )}
-
-                    {/* Interaction Guide */}
-                    {p5Config.interaction_guide && (
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
-                          <MousePointer2 className="w-4 h-4 text-blue-500" />
-                          How to Use This Experiment
-                        </h3>
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                          <div className="text-sm text-slate-600 whitespace-pre-line leading-relaxed">
-                            {p5Config.interaction_guide}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Interactive Controls */}
-                    {p5Config.variables && p5Config.variables.length > 0 && (
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
-                          <Calculator className="w-4 h-4 text-green-500" />
-                          Available Controls
-                        </h3>
-                        <div className="grid gap-2">
-                          {p5Config.variables.map((variable, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100"
-                            >
-                              <span className="flex-shrink-0 w-2 h-2 bg-amber-400 rounded-full" />
-                              {variable}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-
-                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 rounded-b-lg">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                    Got it, let&apos;s experiment!
-                  </Button>
+                <div className="mt-4">
+                  <KaraokeText
+                    text={scene.storyText || "No narrative available."}
+                    alignment={scene.narrationAlignment}
+                    currentTime={currentNarrationTime}
+                    isPlaying={isNarratorPlaying}
+                  />
                 </div>
               </DialogContent>
             </Dialog>
-          )}
+
+            {/* Help Button - Using shadcn Dialog */}
+            {p5Config && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex items-center gap-2 shadow-md bg-white/90 backdrop-blur-sm hover:bg-white"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                    <span>Help</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0">
+                  <DialogHeader className="px-6 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+                    <DialogTitle className="flex items-center gap-2 text-white">
+                      <Beaker className="w-5 h-5" />
+                      Experiment Guide
+                    </DialogTitle>
+                    <DialogDescription className="text-purple-100">
+                      Learn how to use this interactive experiment
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <ScrollArea className="max-h-[calc(85vh-180px)]">
+                    <div className="p-6 space-y-6">
+                      {/* Setup Instructions */}
+                      {p5Config.setup_instructions && (
+                        <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
+                          <h3 className="flex items-center gap-2 font-semibold text-purple-900 mb-2">
+                            <BookOpen className="w-4 h-4" />
+                            About This Experiment
+                          </h3>
+                          <p className="text-sm text-purple-800 leading-relaxed">
+                            {p5Config.setup_instructions}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Learning Objectives */}
+                      {p5Config.learning_objectives &&
+                        p5Config.learning_objectives.length > 0 && (
+                          <div>
+                            <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
+                              <Lightbulb className="w-4 h-4 text-amber-500" />
+                              Learning Objectives
+                            </h3>
+                            <ul className="space-y-2">
+                              {p5Config.learning_objectives.map(
+                                (objective, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"
+                                  >
+                                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                                      {i + 1}
+                                    </span>
+                                    {objective}
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        )}
+
+                      {/* Interaction Guide */}
+                      {p5Config.interaction_guide && (
+                        <div>
+                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
+                            <MousePointer2 className="w-4 h-4 text-blue-500" />
+                            How to Use This Experiment
+                          </h3>
+                          <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                            <div className="text-sm text-slate-600 whitespace-pre-line leading-relaxed">
+                              {p5Config.interaction_guide}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Interactive Controls */}
+                      {p5Config.variables && p5Config.variables.length > 0 && (
+                        <div>
+                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
+                            <Calculator className="w-4 h-4 text-green-500" />
+                            Available Controls
+                          </h3>
+                          <div className="grid gap-2">
+                            {p5Config.variables.map((variable, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100"
+                              >
+                                <span className="flex-shrink-0 w-2 h-2 bg-amber-400 rounded-full" />
+                                {variable}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+
+                  <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 rounded-b-lg">
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Got it, let&apos;s experiment!
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
 
           {p5Config ? (
-            <div className="w-full" style={{ minHeight: "700px" }}>
+            <div className="w-full  h-full">
               <P5Widget
                 code={p5Config.p5_code}
                 width="100%"
@@ -212,7 +247,7 @@ export function SceneVisuals({
               />
             </div>
           ) : (
-            <div className="w-full h-[700px] flex items-center justify-center bg-linear-to-b from-purple-50 to-white">
+            <div className="w-full h-full flex items-center justify-center bg-linear-to-b from-purple-50 to-white">
               <div className="text-center opacity-30">
                 <div className="text-6xl mb-2">🎨</div>
                 <p className="font-semibold text-slate-500">p5.js Experiment</p>
