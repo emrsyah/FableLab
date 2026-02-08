@@ -92,6 +92,7 @@ export function SceneVisuals({
 
   // Render p5.js scene
   if (scene.visualType === "p5") {
+    console.log("p5Config", p5Config);
     return (
       <div className="relative w-full">
         {/* Main Experiment Container - Simple Layout */}

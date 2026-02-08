@@ -74,31 +74,14 @@ export function P5Widget({
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
-    }
-    body {
+      overflow: auto;
       background: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    /* Full-size container */
-    #sketch-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
     
+    /* Let p5 render naturally */
     canvas {
       display: block;
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: auto;
     }
 
     /* Enhanced styling for p5 DOM elements */
@@ -201,8 +184,6 @@ export function P5Widget({
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js"></script>
 </head>
 <body>
-  <main id="sketch-container"></main>
-  
   <script>
     // --- Error handling ---
     window.onerror = function(msg, url, line, col, error) {
@@ -211,63 +192,6 @@ export function P5Widget({
     };
     window.addEventListener('unhandledrejection', function(event) {
       parent.postMessage({ type: 'p5-error', message: 'Unhandled promise: ' + event.reason }, '*');
-    });
-
-    const container = document.getElementById('sketch-container');
-    let containerWidth = window.innerWidth;
-    let containerHeight = window.innerHeight;
-    let canvasElement = null;
-    let originalWidth = 800;
-    let originalHeight = 600;
-
-    // Observe body for p5 elements and move them to container
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node.tagName === 'CANVAS' && !canvasElement) {
-             canvasElement = node;
-             originalWidth = node.width;
-             originalHeight = node.height;
-             container.appendChild(node);
-             resizeCanvas();
-          } else if (['BUTTON', 'INPUT', 'SELECT', 'DIV'].includes(node.tagName)) {
-             container.appendChild(node);
-          }
-        }
-      }
-    });
-    
-    observer.observe(document.body, { childList: true });
-
-    function resizeCanvas() {
-      if (!canvasElement) return;
-      
-      // Calculate scale to fit while maintaining aspect ratio
-      const scaleX = containerWidth / originalWidth;
-      const scaleY = containerHeight / originalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      const newWidth = Math.floor(originalWidth * scale);
-      const newHeight = Math.floor(originalHeight * scale);
-      
-      // Use CSS to scale the canvas (preserves p5 coordinate system)
-      canvasElement.style.width = newWidth + 'px';
-      canvasElement.style.height = newHeight + 'px';
-    }
-
-    // Listen for resize messages from parent
-    window.addEventListener('message', function(event) {
-      if (event.data?.type === 'container-resize') {
-        containerWidth = event.data.width;
-        containerHeight = event.data.height;
-        resizeCanvas();
-      }
-    });
-
-    window.addEventListener('resize', function() {
-      containerWidth = window.innerWidth;
-      containerHeight = window.innerHeight;
-      resizeCanvas();
     });
   </script>
 
@@ -329,7 +253,6 @@ export function P5Widget({
         title="p5.js Sketch"
         className="border-0 block w-full h-full bg-slate-50"
         sandbox="allow-scripts allow-same-origin"
-        scrolling="no"
       />
     </div>
   );

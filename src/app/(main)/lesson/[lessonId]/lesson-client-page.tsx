@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GenerationOverlay } from "@/components/lesson/generation-overlay";
 import { useSceneProgress } from "@/components/lesson/hooks/use-scene-progress";
+import { LessonComplete } from "@/components/lesson/lesson-complete";
 import { ScenePlayer } from "@/components/lesson/scene-player/scene-player";
 import {
   SlimAudioPlayer,
@@ -36,6 +37,7 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [isLessonComplete, setIsLessonComplete] = useState(false);
 
   // Audio control state (lifted from ScenePlayer for header access)
   const [isNarratorActive, setIsNarratorActive] = useState(true);
@@ -159,6 +161,15 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
 
   const handleSceneComplete = () => {
     console.log(`Scene ${currentSceneIndex + 1} completed.`);
+    // Check if this was the last scene
+    if (scenes && currentSceneIndex === scenes.length - 1) {
+      setIsLessonComplete(true);
+    }
+  };
+
+  const handleRestartLesson = () => {
+    setCurrentSceneIndex(0);
+    setIsLessonComplete(false);
   };
 
   const handleQuizComplete = (isCorrect: boolean) => {
@@ -251,6 +262,17 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
         <AlertTriangle className="size-12 mb-4" />
         <p className="text-lg">This lesson has no scenes.</p>
       </div>
+    );
+  }
+
+  // Show lesson complete screen
+  if (isLessonComplete) {
+    return (
+      <LessonComplete
+        lessonTitle={lesson?.title}
+        totalScenes={scenes.length}
+        onRestart={handleRestartLesson}
+      />
     );
   }
 

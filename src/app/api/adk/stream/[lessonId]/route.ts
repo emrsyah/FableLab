@@ -16,7 +16,7 @@ import type {
 
 const ADK_API_URL = "http://localhost:8000";
 const APP_NAME = "fable_agent_p5";
-const DEV = true;
+const DEV = false;
 
 type RouteContext = {
   params: Promise<{ lessonId: string }>;
