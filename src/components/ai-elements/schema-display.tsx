@@ -160,12 +160,12 @@ export const SchemaDisplayPath = ({
   );
 
   return (
-    <span
-      className={cn("font-mono text-sm", className)}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: "needed for parameter highlighting"
-      dangerouslySetInnerHTML={{ __html: children ?? highlightedPath }}
-      {...props}
-    />
+    <span className={cn("font-mono text-sm", className)} {...props}>
+      {children ?? (
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: needed for parameter highlighting
+        <span dangerouslySetInnerHTML={{ __html: highlightedPath }} />
+      )}
+    </span>
   );
 };
 
