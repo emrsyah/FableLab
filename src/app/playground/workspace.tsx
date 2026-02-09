@@ -32,6 +32,7 @@ export interface Experiment {
   description: string;
   p5Code: string;
   parentId?: string;
+  parentIds?: string[];
   version: number;
 }
 
@@ -54,7 +55,18 @@ function autoLayoutExperiments(
   const roots: Experiment[] = [];
 
   for (const exp of experiments) {
-    if (exp.parentId && experiments.some((e) => e.id === exp.parentId)) {
+    // Handle combined experiments with multiple parents (parentIds)
+    if (exp.parentIds && exp.parentIds.length > 0) {
+      // Add as child of first parent, track all parents for positioning
+      const firstParentId = exp.parentIds[0];
+      if (experiments.some((e) => e.id === firstParentId)) {
+        const siblings = childrenOf.get(firstParentId) || [];
+        siblings.push(exp);
+        childrenOf.set(firstParentId, siblings);
+      } else {
+        roots.push(exp);
+      }
+    } else if (exp.parentId && experiments.some((e) => e.id === exp.parentId)) {
       const siblings = childrenOf.get(exp.parentId) || [];
       siblings.push(exp);
       childrenOf.set(exp.parentId, siblings);
@@ -146,6 +158,7 @@ function WorkspaceInner({
             p5Code: exp.p5Code,
             version: exp.version,
             parentId: exp.parentId,
+            parentIds: exp.parentIds,
             isActive: exp.id === activeExpId,
           },
         });
@@ -155,15 +168,17 @@ function WorkspaceInner({
     });
   }, [experiments, activeExpId, selectedNodeIds, layoutPositions, setNodes]);
 
-  // Sync evolution edges
+  // Sync evolution edges (single parent and combined/multi-parent)
   useEffect(() => {
-    setEdges(
-      experiments
-        .filter(
-          (exp) =>
-            exp.parentId && experiments.some((e) => e.id === exp.parentId),
-        )
-        .map((exp) => ({
+    const edgesList: Edge[] = [];
+
+    // Single parent edges (evolved experiments)
+    experiments
+      .filter(
+        (exp) => exp.parentId && experiments.some((e) => e.id === exp.parentId),
+      )
+      .forEach((exp) => {
+        edgesList.push({
           id: `evolution-${exp.parentId}-${exp.id}`,
           source: exp.parentId!,
           target: exp.id,
@@ -176,8 +191,37 @@ function WorkspaceInner({
           label: "evolved",
           labelBgStyle: { fill: "#f5f3ff", fillOpacity: 0.9 },
           labelStyle: { fill: "#7c3aed", fontSize: 11, fontWeight: 600 },
-        })),
-    );
+        });
+      });
+
+    // Multi-parent edges (combined experiments)
+    experiments
+      .filter(
+        (exp) =>
+          exp.parentIds &&
+          exp.parentIds.length >= 2 &&
+          exp.parentIds.every((pid) => experiments.some((e) => e.id === pid)),
+      )
+      .forEach((exp) => {
+        exp.parentIds!.forEach((parentId, index) => {
+          edgesList.push({
+            id: `combined-${parentId}-${exp.id}-${index}`,
+            source: parentId,
+            target: exp.id,
+            animated: true,
+            style: {
+              stroke: "#10B981",
+              strokeWidth: 2,
+              strokeDasharray: "6 3",
+            },
+            label: index === 0 ? "combined" : undefined,
+            labelBgStyle: { fill: "#ecfdf5", fillOpacity: 0.9 },
+            labelStyle: { fill: "#059669", fontSize: 11, fontWeight: 600 },
+          });
+        });
+      });
+
+    setEdges(edgesList);
   }, [experiments, setEdges]);
 
   // Fit view when node count changes

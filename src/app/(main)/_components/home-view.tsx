@@ -54,9 +54,10 @@ export function HomeView() {
         <Button
           className="bg-blue-500 hover:bg-blue-600 cursor-pointer"
           onClick={handlePlaygroundClick}
+          size="lg"
         >
           <FlaskConical />
-          Playground Mode
+          Switch to Playground Mode
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto w-full transition-all duration-500 custom-scrollbar pt-24 px-6 md:px-10 flex items-center justify-center pb-0">

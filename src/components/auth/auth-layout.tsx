@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
+import logo from "~/images/logo/logo.png";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -34,25 +37,18 @@ export function AuthLayout({
           <div className="flex h-full w-full flex-col rounded-2xl bg-white p-4 lg:p-6">
             {/* Logo area - top left */}
             <div className="mb-auto">
-              <div className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-blue-100">
-                  <svg
-                    className="size-5 text-blue-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <path d="M9 3L5 7l4 4" />
-                    <path d="M15 3l4 4-4 4" />
-                    <path d="M12 21V9" />
-                  </svg>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">
+              <Link href="/" className="flex items-center gap-3">
+                <Image
+                  src={logo}
+                  alt="FableLab AI"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                />
+                <span className="text-xl font-semibold text-gray-900">
                   FableLab AI
                 </span>
-              </div>
+              </Link>
             </div>
             {/* Form content - centered */}
             <div className="my-auto">

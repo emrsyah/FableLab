@@ -12,6 +12,7 @@ export interface ExperimentNodeData extends Record<string, unknown> {
   p5Code: string;
   version: number;
   parentId?: string;
+  parentIds?: string[];
   isActive?: boolean;
 }
 
