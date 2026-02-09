@@ -14,7 +14,12 @@ interface ChatPanelProps {
   isAgentSpeaking: boolean;
 
   // Connection status
-  status: "disconnected" | "connecting" | "connected" | "error";
+  status:
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "error"
+    | "reconnecting";
 
   // Media controls
   isMicOn: boolean;

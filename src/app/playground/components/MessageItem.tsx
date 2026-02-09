@@ -14,7 +14,12 @@ import type { Msg } from "../hooks";
 
 interface MessageItemProps {
   message: Msg;
-  status: "disconnected" | "connecting" | "connected" | "error";
+  status:
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "error"
+    | "reconnecting";
   onReconnect: () => void;
 }
 

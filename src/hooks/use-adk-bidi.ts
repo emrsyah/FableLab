@@ -248,6 +248,7 @@ export interface UseADKBIDIReturn {
   currentAgent: string | null;
   isProcessingTool: boolean;
   turnCount: number;
+  reconnectAttempt: number;
   connect: () => void;
   disconnect: () => void;
   sendAudio: (base64Audio: string) => void;
@@ -258,6 +259,11 @@ export interface UseADKBIDIReturn {
 
 const DEFAULT_WS_URL =
   process.env.NEXT_PUBLIC_ADK_WS_URL || "ws://localhost:8000/playground/bidi";
+
+// Reconnection configuration
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY_BASE = 2000; // 2 seconds
+const PING_INTERVAL = 30000; // 30 seconds
 
 export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
   const {
@@ -287,19 +293,48 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
   const [currentAgent, setCurrentAgent] = useState<string | null>(null);
   const [isProcessingTool, setIsProcessingTool] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const userIdRef = useRef(propUserId || nanoid(8));
-  const sessionIdRef = useRef(propSessionId || nanoid(8));
+  const userIdRef = useRef<string>("");
+  const sessionIdRef = useRef<string>("");
   const playbackManagerRef = useRef<AudioPlaybackManager | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Track whether the model is currently outputting "thinking" (internal reasoning)
   const isThinkingRef = useRef(false);
 
+  // Initialize IDs from sessionStorage for session resumption
+  useEffect(() => {
+    // Try to restore from sessionStorage for session resumption
+    const storedUserId = sessionStorage.getItem("adk_bidi_user_id");
+    const storedSessionId = sessionStorage.getItem("adk_bidi_session_id");
+
+    if (storedUserId) {
+      userIdRef.current = storedUserId;
+    } else {
+      userIdRef.current = propUserId || nanoid(8);
+      sessionStorage.setItem("adk_bidi_user_id", userIdRef.current);
+    }
+
+    if (storedSessionId) {
+      sessionIdRef.current = storedSessionId;
+    } else {
+      sessionIdRef.current = propSessionId || nanoid(8);
+      sessionStorage.setItem("adk_bidi_session_id", sessionIdRef.current);
+    }
+  }, []);
+
   // Sync props
   useEffect(() => {
-    if (propUserId) userIdRef.current = propUserId;
-    if (propSessionId) sessionIdRef.current = propSessionId;
+    if (propUserId) {
+      userIdRef.current = propUserId;
+      sessionStorage.setItem("adk_bidi_user_id", propUserId);
+    }
+    if (propSessionId) {
+      sessionIdRef.current = propSessionId;
+      sessionStorage.setItem("adk_bidi_session_id", propSessionId);
+    }
   }, [propUserId, propSessionId]);
 
   // Update state helper that also notifies callback
@@ -823,9 +858,24 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("[BIDI] Connected");
+      console.log("[BIDI] Connected successfully");
       setIsConnected(true);
+      setReconnectAttempt(0); // Reset reconnect counter
       updateState("connected");
+
+      // Setup ping interval to keep connection alive
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
+      pingIntervalRef.current = setInterval(() => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          try {
+            wsRef.current.send(JSON.stringify({ type: "ping" }));
+          } catch {
+            // Ignore ping errors
+          }
+        }
+      }, PING_INTERVAL);
     };
 
     ws.onmessage = handleMessage;
@@ -845,15 +895,70 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
       setIsConnected(false);
       setIsSpeaking(false);
       wsRef.current = null;
+
+      // Clear ping interval
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
+
+      // Normal closure (1000) - don't reconnect
+      if (event.code === 1000) {
+        console.log("[BIDI] Normal closure, not reconnecting");
+        updateState("idle");
+        // Clear session storage on clean disconnect
+        sessionStorage.removeItem("adk_bidi_session_id");
+        return;
+      }
+
+      // Handle specific error codes
+      if (event.code === 1011) {
+        console.log(
+          "[BIDI] Server error (1011) - likely timeout, will reconnect",
+        );
+        // Push a user-friendly message to transcript
+        addTranscriptEntry({
+          text: "Connection timed out due to inactivity. Reconnecting...",
+          isUser: false,
+          timestamp: new Date(),
+          type: "message",
+        });
+      }
+
+      // Check max retry limit
+      if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
+        console.error("[BIDI] Max reconnection attempts reached");
+        updateState("error");
+        addTranscriptEntry({
+          text: "Failed to reconnect after multiple attempts. Please refresh the page.",
+          isUser: false,
+          timestamp: new Date(),
+          type: "message",
+        });
+        onError?.(new Error("Max reconnection attempts reached"));
+        return;
+      }
+
+      // Exponential backoff for reconnection
+      const delay = RECONNECT_DELAY_BASE * 2 ** reconnectAttempt;
+      console.log(
+        `[BIDI] Reconnecting in ${delay}ms (attempt ${reconnectAttempt + 1}/${MAX_RECONNECT_ATTEMPTS})`,
+      );
       updateState("idle");
 
-      // Auto-reconnect
       reconnectTimeoutRef.current = setTimeout(() => {
-        console.log("[BIDI] Reconnecting...");
+        setReconnectAttempt((prev) => prev + 1);
         connect();
-      }, 5000);
+      }, delay);
     };
-  }, [wsUrl, handleMessage, onError, updateState]);
+  }, [
+    wsUrl,
+    handleMessage,
+    onError,
+    updateState,
+    reconnectAttempt,
+    addTranscriptEntry,
+  ]);
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
@@ -862,6 +967,11 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
+    }
+
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
     }
 
     if (wsRef.current) {
@@ -874,7 +984,11 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
 
     setIsConnected(false);
     setIsSpeaking(false);
+    setReconnectAttempt(0);
     updateState("idle");
+
+    // Clear session storage on manual disconnect
+    sessionStorage.removeItem("adk_bidi_session_id");
   }, [updateState]);
 
   // Send audio data
@@ -956,6 +1070,9 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -971,6 +1088,7 @@ export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
     currentAgent,
     isProcessingTool,
     turnCount,
+    reconnectAttempt,
     connect,
     disconnect,
     sendAudio,

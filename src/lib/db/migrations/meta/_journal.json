@@ -43,6 +43,13 @@
       "when": 1770438626018,
       "tag": "0005_add_p5_config",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770679701293,
+      "tag": "0006_flawless_caretaker",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,12 @@
-import { subscribe } from "@fal-ai/serverless-client";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  type BaseComponent,
+  generateBaseComponents,
+  generateSceneImage,
+} from "@/lib/ai/fal-image-generation";
 import { db } from "@/lib/db";
+import { baseComponents as baseComponentsTable } from "@/lib/db/schema/base-components";
 import { lessons } from "@/lib/db/schema/lessons";
 import { quizzes, scenes } from "@/lib/db/schema/scenes";
 import {
@@ -195,6 +200,48 @@ export async function GET(request: NextRequest, context: RouteContext) {
             targetAge as "elementary" | "middle" | "high",
           );
 
+          // PHASE 1: Generate base components for consistent imagery
+          let generatedComponents: BaseComponent[] = [];
+
+          if (storyContent.visual_style_guide && !DEV) {
+            sendEvent("status", {
+              message: "Creating visual assets for consistent style...",
+              agent: "System",
+            });
+
+            try {
+              const componentResult = await generateBaseComponents(
+                storyContent.visual_style_guide,
+                lessonId,
+              );
+
+              generatedComponents = componentResult.components;
+
+              // Save components to database
+              for (const component of generatedComponents) {
+                await db.insert(baseComponentsTable).values({
+                  lessonId: lessonId,
+                  componentType: component.componentType,
+                  componentName: component.componentName,
+                  imageUrl: component.imageUrl,
+                  metadata: component.metadata,
+                });
+              }
+
+              sendEvent("status", {
+                message: "Visual assets ready. Generating scenes...",
+                agent: "System",
+              });
+            } catch (componentError) {
+              console.error("Base component generation error:", componentError);
+              // Continue without base components - will fall back to direct generation
+              sendEvent("status", {
+                message: "Using fallback image generation...",
+                agent: "System",
+              });
+            }
+          }
+
           // Create story scenes
           let sceneNumber = 1;
           for (const adkScene of storyContent.scenes) {
@@ -205,19 +252,56 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
             // Generate image using Fal.ai
             let imageUrl = "";
+            let usedComponentIds: {
+              characters?: string[];
+              backgrounds?: string[];
+              props?: string[];
+            } = {};
+
             try {
               if (DEV) {
                 imageUrl = `https://placehold.co/1920x1080/3B82F6/FFFFFF/png?text=Scene+${sceneNumber}`;
-              } else {
+              } else if (generatedComponents.length > 0) {
+                // Use component-based generation
                 sendEvent("status", {
                   message: `Generating image for scene ${sceneNumber}...`,
                   agent: "System",
                 });
-                imageUrl = await generateImage(
+
+                imageUrl = await generateSceneImage({
+                  sceneTitle: adkScene.title,
+                  sceneImagePrompt: adkScene.image_prompt,
+                  sceneNumber: sceneNumber,
+                  baseComponents: generatedComponents,
+                  styleDescription:
+                    storyContent.visual_style_guide?.art_direction.technique,
+                });
+
+                // Track which components were used
+                usedComponentIds = {
+                  characters: generatedComponents
+                    .filter((c) => c.componentType === "character")
+                    .map((c) => c.id),
+                  backgrounds: generatedComponents
+                    .filter((c) => c.componentType === "background")
+                    .map((c) => c.id),
+                };
+              } else {
+                // Fallback to direct generation
+                sendEvent("status", {
+                  message: `Generating image for scene ${sceneNumber}...`,
+                  agent: "System",
+                });
+
+                const { generateImageDirect } = await import(
+                  "@/lib/ai/fal-image-generation"
+                );
+                imageUrl = await generateImageDirect(
                   adkScene.image_prompt,
                   adkScene.title,
                 );
               }
+
               sendEvent("scene_image", { sceneNumber, imageUrl });
             } catch (imgError) {
               console.error("Image generation error:", imgError);
@@ -242,6 +326,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
                   adkScene.narration,
                   voiceForAge,
                 );
+                console.log("[CHECKPOINT] narrationResult", narrationResult);
                 narrationUrl = narrationResult.audioUrl;
                 narrationDuration = narrationResult.durationSeconds;
                 narrationAlignment = narrationResult.alignment ?? null;
@@ -268,6 +353,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
               narrationDuration: narrationDuration || null,
               narrationAlignment: narrationAlignment,
               hasQuiz: false,
+              baseComponentIds: usedComponentIds,
             });
 
             sendEvent("scene_ready", { sceneNumber });
@@ -383,67 +469,4 @@ export async function GET(request: NextRequest, context: RouteContext) {
       Connection: "keep-alive",
     },
   });
-}
-
-/**
- * Generate image using Fal.ai and upload to Uploadthing for permanent storage
- */
-async function generateImage(prompt: string, title: string): Promise<string> {
-  const apiKey = process.env.FAL_KEY;
-
-  if (!apiKey) {
-    console.warn("FAL_KEY not set, using placeholder");
-    return `https://placehold.co/1920x1080/3B82F6/FFFFFF/png?text=${encodeURIComponent(title)}`;
-  }
-
-  const fullPrompt = `A digital illustration for a STEM lesson. ${prompt}. Style: vibrant, educational, engaging for students.`;
-
-  const result: any = await subscribe("fal-ai/nano-banana", {
-    input: {
-      prompt: fullPrompt,
-      image_size: "landscape_16_9",
-      num_inference_steps: 4,
-      seed: Math.floor(Math.random() * 1000000),
-      enable_safety_checker: true,
-    },
-    logs: false,
-  });
-
-  if (!result.images || result.images.length === 0) {
-    throw new Error("No image returned from Fal.ai");
-  }
-
-  const tempImageUrl = result.images[0].url;
-
-  // Download the image from Fal.ai and re-upload to Uploadthing for permanent storage
-  try {
-    const { UTApi } = await import("uploadthing/server");
-    const utapi = new UTApi();
-
-    // Fetch the image from Fal.ai temporary URL
-    const imageResponse = await fetch(tempImageUrl);
-    if (!imageResponse.ok) {
-      throw new Error("Failed to fetch image from Fal.ai");
-    }
-
-    const imageBlob = await imageResponse.blob();
-    const imageFile = new File([imageBlob], `scene-${Date.now()}.png`, {
-      type: "image/png",
-    });
-
-    // Upload to Uploadthing
-    const uploadResult = await utapi.uploadFiles([imageFile]);
-
-    if (uploadResult[0]?.data?.ufsUrl) {
-      return uploadResult[0].data.ufsUrl;
-    }
-
-    // Fallback to temporary URL if upload fails
-    console.warn("Uploadthing upload failed, using temporary Fal.ai URL");
-    return tempImageUrl;
-  } catch (uploadError) {
-    console.error("Error uploading image to Uploadthing:", uploadError);
-    // Fallback to temporary URL
-    return tempImageUrl;
-  }
 }

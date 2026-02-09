@@ -113,7 +113,7 @@ export default function PlaygroundPage() {
   } = useAudioPlayback({ muted });
 
   // ---- WebSocket hook ---------------------------------------------------------
-  const { status, connect, disconnect, send } = useWebSocket({
+  const { status, connect, disconnect, send, reconnectAttempt } = useWebSocket({
     baseUrl: WS_BASE,
     onBinaryMessage: (data) => {
       playAudio(data);
@@ -331,6 +331,7 @@ export default function PlaygroundPage() {
         experimentCount={experiments.length}
         isScreenSharing={screenSharing}
         status={status}
+        reconnectAttempt={reconnectAttempt}
         onConnect={connect}
         onDisconnect={handleDisconnect}
       />

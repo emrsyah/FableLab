@@ -14,7 +14,13 @@ import { cn } from "@/lib/utils";
 interface HeaderProps {
   experimentCount: number;
   isScreenSharing: boolean;
-  status: "disconnected" | "connecting" | "connected" | "error";
+  status:
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "error"
+    | "reconnecting";
+  reconnectAttempt?: number;
   onConnect: () => void;
   onDisconnect: () => void;
 }
@@ -23,6 +29,7 @@ export function Header({
   experimentCount,
   isScreenSharing,
   status,
+  reconnectAttempt = 0,
   onConnect,
   onDisconnect,
 }: HeaderProps) {
@@ -68,28 +75,30 @@ export function Header({
             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
             status === "connected"
               ? "bg-[#3B82F6] text-white border-[#3B82F6] shadow-md shadow-blue-500/20"
-              : status === "connecting"
+              : status === "connecting" || status === "reconnecting"
                 ? "bg-[#F1F5F9] text-[#64748B] border-transparent"
                 : "bg-[#F1F5F9] text-[#64748B] border-transparent hover:bg-slate-200",
           )}
         >
           {status === "connected" ? (
             <Wifi className="size-3.5" />
-          ) : status === "connecting" ? (
+          ) : status === "connecting" || status === "reconnecting" ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (
             <WifiOff className="size-3.5" />
           )}
           {status === "connected"
             ? "Connected"
-            : status === "connecting"
-              ? "Connecting..."
-              : status === "error"
-                ? "Error"
-                : "Disconnected"}
+            : status === "reconnecting"
+              ? `Reconnecting (${reconnectAttempt}/5)...`
+              : status === "connecting"
+                ? "Connecting..."
+                : status === "error"
+                  ? "Error"
+                  : "Disconnected"}
         </button>
 
-        {status === "disconnected" || status === "error" ? (
+        {(status === "disconnected" || status === "error") && (
           <button
             type="button"
             onClick={onConnect}
@@ -97,7 +106,8 @@ export function Header({
           >
             Connect
           </button>
-        ) : status === "connected" ? (
+        )}
+        {status === "connected" && (
           <button
             type="button"
             onClick={onDisconnect}
@@ -105,7 +115,16 @@ export function Header({
           >
             Disconnect
           </button>
-        ) : null}
+        )}
+        {status === "reconnecting" && (
+          <button
+            type="button"
+            onClick={onDisconnect}
+            className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-700 font-medium transition-colors bg-white/50 hover:bg-white border border-slate-200 rounded-full"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </header>
   );

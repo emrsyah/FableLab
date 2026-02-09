@@ -46,6 +46,14 @@ export const scenes = pgTable("scenes", {
   // Quiz (nullable - only for milestone scenes)
   hasQuiz: boolean("has_quiz").default(false).notNull(),
 
+  // Component-based generation tracking
+  // Records which base components were used to generate this scene's image
+  baseComponentIds: json("base_component_ids").$type<{
+    characters?: string[]; // Base component IDs for characters used
+    backgrounds?: string[]; // Base component IDs for backgrounds used
+    props?: string[]; // Base component IDs for props used
+  }>(),
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at")

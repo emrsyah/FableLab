@@ -9,7 +9,12 @@ import { MessageItem } from "./MessageItem";
 interface MessageListProps {
   messages: Msg[];
   isAgentSpeaking: boolean;
-  status: "disconnected" | "connecting" | "connected" | "error";
+  status:
+    | "disconnected"
+    | "connecting"
+    | "connected"
+    | "error"
+    | "reconnecting";
   onReconnect: () => void;
 }
 
