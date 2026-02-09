@@ -18,7 +18,7 @@ import { Workspace } from "./workspace";
 // ============================================================================
 
 const WS_BASE =
-  process.env.NEXT_PUBLIC_PLAYGROUND_WS_URL || "ws://localhost:8000";
+  process.env.NEXT_PUBLIC_ADK_WS_URL || "ws://localhost:8000/playground/bidi";
 
 // ============================================================================
 // Page component

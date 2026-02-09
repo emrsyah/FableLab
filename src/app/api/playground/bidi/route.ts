@@ -28,7 +28,7 @@ const connections = new Map<string, BIDIConnection>();
 
 // Backend WebSocket URL - user should configure this
 const BACKEND_WS_URL =
-  process.env.ADK_BACKEND_WS_URL || "ws://localhost:8000/playground/bidi";
+  process.env.ADK_PLAYGROUND_WS_URL || "ws://localhost:8000/playground/bidi";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

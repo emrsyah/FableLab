@@ -256,7 +256,8 @@ export interface UseADKBIDIReturn {
   initializeAudio: () => Promise<void>;
 }
 
-const DEFAULT_WS_URL = "ws://localhost:8000/playground/bidi";
+const DEFAULT_WS_URL =
+  process.env.NEXT_PUBLIC_ADK_WS_URL || "ws://localhost:8000/playground/bidi";
 
 export function useADKBIDI(options: UseADKBIDIOptions): UseADKBIDIReturn {
   const {

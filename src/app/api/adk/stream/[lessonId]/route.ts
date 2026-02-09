@@ -14,7 +14,7 @@ import type {
   StoryContentOutput,
 } from "@/types/adk-types";
 
-const ADK_API_URL = "http://localhost:8000";
+const ADK_API_URL = process.env.ADK_BASE_URL || "http://localhost:8000";
 const APP_NAME = "fable_agent_p5";
 const DEV = false;
 

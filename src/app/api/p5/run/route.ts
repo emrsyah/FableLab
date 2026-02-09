@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const ADK_API_URL = "http://localhost:8000";
+const ADK_API_URL = process.env.ADK_BASE_URL || "http://localhost:8000";
 const APP_NAME = "fable_agent_p5";
 
 export async function POST(request: NextRequest) {
