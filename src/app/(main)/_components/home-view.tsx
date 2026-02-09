@@ -1,8 +1,11 @@
 "use client";
 
+import { FlaskConical } from "lucide-react";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { Persona } from "@/components/ai-elements/persona";
+import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import { useChat } from "../_hooks/use-chat";
 import { ChatInput } from "./chat-input";
@@ -34,9 +37,20 @@ export function HomeView() {
     },
   });
 
+  const router = useRouter();
+
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-50/50 overflow-hidden">
       {/* Content Area */}
+      <div className="absolute top-2 right-2">
+        <Button
+          className="bg-blue-500 hover:bg-blue-600 cursor-pointer"
+          onClick={() => router.push("/playground")}
+        >
+          <FlaskConical />
+          Playground Mode
+        </Button>
+      </div>
       <div className="flex-1 overflow-y-auto w-full transition-all duration-500 custom-scrollbar pt-24 px-6 md:px-10 flex items-center justify-center pb-0">
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-8">
           {/* Landing View: Logo & Greeting */}

@@ -74,14 +74,23 @@ export function P5Widget({
     html, body {
       width: 100%;
       height: 100%;
-      overflow: auto;
+      overflow: hidden;
       background: #f8fafc;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
-    /* Let p5 render naturally */
+    /* Scale p5 canvas to fit container */
     canvas {
       display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    /* Ensure the main container scrolls if content overflows */
+    main, #main-container, .experiment-container {
+      overflow-y: auto;
+      max-height: 100vh;
     }
 
     /* Enhanced styling for p5 DOM elements */
@@ -193,6 +202,20 @@ export function P5Widget({
     window.addEventListener('unhandledrejection', function(event) {
       parent.postMessage({ type: 'p5-error', message: 'Unhandled promise: ' + event.reason }, '*');
     });
+    
+    // --- Listen for container resize messages from parent ---
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'container-resize') {
+        // If p5 is loaded and resizeCanvas is available, resize
+        if (typeof resizeCanvas === 'function') {
+          resizeCanvas(e.data.width, e.data.height);
+        }
+      }
+    });
+    
+    // --- Override p5 windowResized to match container ---
+    window._p5ContainerWidth = window.innerWidth;
+    window._p5ContainerHeight = window.innerHeight;
   </script>
 
   <script>

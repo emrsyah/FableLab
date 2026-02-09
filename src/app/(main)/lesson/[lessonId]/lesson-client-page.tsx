@@ -21,6 +21,7 @@ import {
   SlimAudioPlayer,
   type SlimAudioPlayerRef,
 } from "@/components/lesson/slim-audio-player";
+import { VoiceTutorFAB } from "@/components/lesson/voice-tutor-fab";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -352,6 +353,14 @@ export default function LessonClientPage({ lessonId }: LessonClientPageProps) {
           isNarratorPlaying={isNarratorPlaying}
         />
       </div>
+
+      {/* Voice Tutor FAB */}
+      <VoiceTutorFAB
+        lessonTopic={lesson?.topic || ""}
+        sceneTitle={currentScene.title || ""}
+        sceneContent={currentScene.storyText || ""}
+        sceneNumber={currentSceneIndex + 1}
+      />
 
       {/* Sticky Footer with Audio Player */}
       <footer className="sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 z-50">
