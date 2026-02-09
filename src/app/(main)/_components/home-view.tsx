@@ -39,13 +39,21 @@ export function HomeView() {
 
   const router = useRouter();
 
+  const handlePlaygroundClick = () => {
+    if (!session?.user) {
+      router.push("/login");
+    } else {
+      router.push("/playground");
+    }
+  };
+
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-50/50 overflow-hidden">
       {/* Content Area */}
       <div className="absolute top-2 right-2">
         <Button
           className="bg-blue-500 hover:bg-blue-600 cursor-pointer"
-          onClick={() => router.push("/playground")}
+          onClick={handlePlaygroundClick}
         >
           <FlaskConical />
           Playground Mode
