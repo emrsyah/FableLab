@@ -1,7 +1,9 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { MANA_SYSTEM_INSTRUCTION } from "@/lib/ai/safety";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+});
 
 interface TokenRequest {
   lessonContext: {
