@@ -75,7 +75,7 @@
     "media-chrome": "^4.17.2",
     "motion": "^12.29.2",
     "nanoid": "^5.1.6",
-    "next": "16.0.3",
+    "next": "16.0.10",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "server-only": "^0.0.1",
