@@ -1,86 +1,94 @@
-# Next Js TRPC Drizzle Starter Boilerplate
+# Fable Lab
 
-Opinionated starter kit for building full‑stack React apps with Next.js 16, React 19, Drizzle ORM, Better Auth, and tRPC. It ships with a typed database layer, authentication primitives, and tooling for a smooth DX.
+<div align="center">
+  <img src="public/icon.png" alt="Fable Lab Logo" width="120" />
+  <h3>AI-Native Interactive STEM Learning Platform</h3>
+  <p>Stories that teach. Experiments that live. Learning that adapts.</p>
+</div>
 
-## Highlights
-- **App Router + React Server Components** with shared UI living under `src/app`.
-- **tRPC 11 + SuperJSON** for fully typed procedures (`src/lib/server` + `src/app/api/trpc`).
-- **Drizzle ORM + Neon Serverless** with example `users`/`posts` schema and generated migrations.
-- **Better Auth** (email/password + Google OAuth) wired to the Drizzle adapter.
-- **TanStack Query** client and React hooks in `src/lib/trpc/client.tsx`.
-- **DX niceties**: TypeScript 5, Biome formatting/linting, Husky + Commitlint pre-commit checks.
+<br/>
 
-## Project Layout
-```
-src/
-├─ app/                # App Router routes, layouts, API handlers
-│  ├─ api/auth         # Better Auth handler
-│  ├─ api/trpc         # tRPC edge handler
-│  ├─ dashboard        # Example protected page
-│  └─ page.tsx         # Landing page
-├─ components/auth     # Auth form & profile widgets
-├─ lib/
-│  ├─ auth             # Better Auth config + schema
-│  ├─ db               # Drizzle client, schema, migrations
-│  ├─ server           # tRPC routers + helpers
-│  └─ trpc             # Client/context utilities
-```
+Fable Lab is a next-generation K12 educational platform that combines **generative AI**, **interactive p5.js simulations**, and **interactive storytelling** to make STEM concepts tangible and engaging.
 
-## Prerequisites
-- Node.js 20+
-- bun (recommended) or npm/yarn/bun
-- PostgreSQL database (Neon works great)
-- Google OAuth credentials (optional unless you enable Google login)
+Built with **Next.js 16** and **Google's Gemini models**, it offers two distinct modes:
+1.  **Lesson Mode**: A structured, story-driven learning experience powered by a multi-agent backend.
+2.  **Playground**: A real-time, voice-enabled collaborative coding environment where students build experiments by talking to an AI.
 
-## Environment Variables
-Create `.env.local` (the project already reads from it) and provide:
+## ✨ Key Features
 
-| Variable | Description |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection string used by Drizzle + Better Auth |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID (optional) |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (optional) |
+-   **🤖 AI-Generated Lessons**: Enter a topic (e.g., "Photosynthesis for 5th graders"), and our multi-agent system generates a complete lesson with:
+    -   A narrative story tailored to the age group.
+    -   Consistent characters and visual style.
+    -   A fully interactive, code-generated p5.js experiment.
+    -   Embedded quiz questions.
+-   **🎙️ Voice-First Playground**: Talk to the AI to build visualizations in real-time.
+    -   "Make a bouncing ball." -> *Code generates*
+    -   "Now make it react to gravity." -> *Code updates*
+    -   Uses **Gemini Multimodal Live API** for sub-100ms latency.
+-   **🎨 Dynamic Visuals**: Consistent art direction across generated stories using specialized prompting pipelines.
+-   **🛠️ Modern Tech Stack**: Built for performance and developer experience.
 
-> Add any other provider secrets you enable in `src/lib/auth/index.ts`.
+## 🏗️ Tech Stack
 
-## Getting Started
-```bash
-bun install          # Install dependencies
-bun db:generate      # (optional) sync schema to migrations
-bun db:migrate       # Run pending migrations against DATABASE_URL
-bun dev              # Start Next.js on http://localhost:3000
-```
+-   **Framework**: Next.js 16 (App Router)
+-   **Language**: TypeScript
+-   **AI SDK**: Vercel AI SDK + Google Generative AI
+-   **Database**: PostgreSQL (Neon) + Drizzle ORM
+-   **Styling**: Tailwind CSS + Shadcn UI
+-   **State/API**: tRPC + TanStack Query
+-   **Auth**: Better Auth
 
-The sample dashboard lives at `/dashboard` and expects an authenticated user. `src/components/auth` contains the form/profile UI you can drop into any route.
+## 🚀 Getting Started
 
-## Useful Scripts
+### Prerequisites
+-   Node.js 20+
+-   Bun (recommended) or npm/pnpm
+-   PostgreSQL database (Neon.tech recommended)
+-   Google Cloud Project with Vertex AI / Gemini API enabled
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/emrsyah/fable-lab.git
+    cd fable-lab
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    bun install
+    ```
+
+3.  **Environment Setup:**
+    Create a `.env.local` file based on `.env.example`:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Fill in your API keys (Google AI, Database URL, etc.).
+
+4.  **Database Migration:**
+    Push the schema to your database:
+    ```bash
+    bun db:generate
+    bun db:migrate
+    ```
+
+5.  **Run Development Server:**
+    ```bash
+    bun dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+## 📜 Scripts
 
 | Script | Purpose |
 | --- | --- |
-| `bun dev` | Run the Next.js development server |
-| `bun build` / `bun start` | Production build & serve |
-| `bun lint` / `bun lint:fix` | Biome static analysis & autofix |
-| `bun format` | Biome formatter |
-| `bun db:generate` | Generate SQL migrations from the Drizzle schema |
-| `bun db:migrate` | Apply migrations via `src/lib/db/migrate.ts` |
-| `bun db:studio` | Launch Drizzle Studio UI |
-| `bun auth:generate` | Regenerate Better Auth schema file |
-| `bun auth:migrate` | Shortcut for pushing auth tables (`bun db:push`) |
+| `bun dev` | Start development server |
+| `bun build` | Build for production |
+| `bun db:studio` | Open Drizzle Studio to manage DB data |
+| `bun db:push` | Push schema changes to DB (prototyping) |
+| `bun lint` | Run Biome linter |
 
-## Database + Auth Flow
-1. Define entities inside `src/lib/db/schema` or `src/lib/auth/schema.ts`.
-2. Run `bun db:generate` to create SQL migrations in `src/lib/db/migrations`.
-3. Apply them locally with `bun db:migrate` or push to Neon with `bun db:push`.
-4. Better Auth uses the Drizzle adapter defined in `src/lib/auth/index.ts`. Update providers, secrets, and session logic there.
+## 🤝 Related Projects
 
-## Extending the Stack
-- Add new tRPC routers under `src/lib/server/routers` and register them in `_app.ts`.
-- Co-locate server components under `src/app/**/page.tsx`; client components go in `src/components`.
-- Use `src/lib/trpc/client.tsx` helpers to call procedures from React with TanStack Query.
-- Customize middleware, global styles, or metadata via `src/app/layout.tsx` and `globals.css`.
-
-## Quality Gates
-Husky runs `bun lint` before each commit. To skip temporarily, pass `HUSKY=0` (not recommended). CI/CD can reuse the same scripts.
-
----
-Questions or ideas? File an issue or start sketching directly in `src/app`. Happy hacking! 🚀
+-   **[Fable Lab ADK](https://github.com/emrsyah/fable-lab-adk)**: The Python backend hosting the advanced AI agents that power this frontend.
